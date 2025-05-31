@@ -1,8 +1,8 @@
-{{-- resources/views/gudang/index.blade.php --}}
+{{-- resources/views/gudang/create.blade.php --}}
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Manajemen Gudang') }}
+            {{ __('Tambah Gudang Baru') }}
         </h2>
     </x-slot>
 
@@ -10,66 +10,43 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    @can('create-gudang')
-                        <div class="flex justify-end mb-4">
-                            <a href="{{ route('gudang.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                + Tambah Gudang
-                            </a>
+                    {{-- INI ADALAH FORM UNTUK MENAMBAH DATA BARU --}}
+                    <form action="{{ route('gudang.store') }}" method="POST">
+                        @csrf
+                        <div>
+                            <x-input-label for="nama_gudang" :value="__('Nama Gudang')" />
+                            <x-text-input id="nama_gudang" class="block mt-1 w-full" type="text" name="nama_gudang" :value="old('nama_gudang')" required autofocus />
+                            <x-input-error :messages="$errors->get('nama_gudang')" class="mt-2" />
                         </div>
-                    @endcan
-                    
-                    @if (session('success'))
-                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                            {{ session('success') }}
+                        <div class="mt-4">
+                            <x-input-label for="lokasi" :value="__('Lokasi Gudang')" />
+                            <x-text-input id="lokasi" class="block mt-1 w-full" type="text" name="lokasi" :value="old('lokasi')" required />
+                            <x-input-error :messages="$errors->get('lokasi')" class="mt-2" />
                         </div>
-                    @endif
-                    @if (session('error'))
-                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                            {{ session('error') }}
-                        </div>
-                    @endif
+                        
+                        {{-- Dropdown ini hanya muncul untuk Superadmin dan menggunakan variabel $programStudis --}}
+                        @if (Auth::user()->role == 'superadmin')
+                            <div class="mt-4">
+                                <x-input-label for="id_program_studi" :value="__('Milik Program Studi')" />
+                                <select id="id_program_studi" name="id_program_studi" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                    <option value="">-- Umum / Fakultas --</option>
+                                    @foreach ($programStudis as $prodi)
+                                        <option value="{{ $prodi->id }}" {{ old('id_program_studi') == $prodi->id ? 'selected' : '' }}>
+                                            {{ $prodi->nama_program_studi }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <x-input-error :messages="$errors->get('id_program_studi')" class="mt-2" />
+                            </div>
+                        @endif
 
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Gudang</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lokasi</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pemilik</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse ($gudangs as $gudang)
-                                <tr>
-                                    <td class="px-6 py-4">{{ $loop->iteration }}</td>
-                                    <td class="px-6 py-4">{{ $gudang->nama_gudang }}</td>
-                                    <td class="px-6 py-4">{{ $gudang->lokasi }}</td>
-                                    <td class="px-6 py-4">
-                                        {{ $gudang->programStudi->nama_program_studi ?? 'Umum / Fakultas' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        @can('update-gudang', $gudang)
-                                            <a href="{{ route('gudang.edit', $gudang->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                                        @endcan
-                                        @can('delete-gudang', $gudang)
-                                            <form action="{{ route('gudang.destroy', $gudang->id) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900 ml-4">Hapus</button>
-                                            </form>
-                                        @endcan
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
-                                        Data gudang tidak ditemukan.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                        <div class="flex items-center justify-end mt-4">
+                            <a href="{{ route('gudang.index') }}" class="text-gray-600 hover:text-gray-900 mr-4">Batal</a>
+                            <x-primary-button>
+                                {{ __('Simpan') }}
+                            </x-primary-button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
