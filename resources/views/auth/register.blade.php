@@ -16,6 +16,19 @@
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
+        <div class="mt-4">
+            <x-input-label for="id_program_studi" :value="__('Program Studi')" />
+            <select id="id_program_studi" name="id_program_studi" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                <option value="">-- Pilih Program Studi --</option>
+                @foreach ($programStudis as $prodi)
+                    <option value="{{ $prodi->id }}" {{ old('id_program_studi') == $prodi->id ? 'selected' : '' }}>
+                        {{ $prodi->nama_program_studi }}
+                    </option>
+                @endforeach
+            </select>
+            <x-input-error :messages="$errors->get('id_program_studi')" class="mt-2" />
+        </div>
+
         <!-- Password -->
         <div class="mt-4">
             <x-input-label for="password" :value="__('Password')" />

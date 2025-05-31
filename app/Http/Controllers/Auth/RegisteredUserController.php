@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\ProgramStudi;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -20,6 +21,8 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
+        $programStudis = ProgramStudi::orderBy('nama_program_studi')->get(); // <-- AMBIL DATA PROGRAM STUDI
+        return view('auth.register', compact('programStudis')); // <-- KIRIM KE VIEW
         return view('auth.register');
     }
 
@@ -33,6 +36,7 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'id_program_studi' => ['required', 'exists:program_studis,id'], // <-- VALIDASI BARU
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -40,6 +44,8 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'id_program_studi' => $request->id_program_studi, // <-- SIMPAN ID PROGRAM STUDI
+            'role' => 'laboran', // <-- SET ROLE DEFAULT KE 'laboran'
         ]);
 
         event(new Registered($user));
