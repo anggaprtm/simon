@@ -72,6 +72,7 @@ class BahanController extends Controller
                     return $query->whereNull('id_program_studi')->orWhere('id_program_studi', $user->id_program_studi);
                 }),
             ],
+            'jenis_bahan' => 'nullable|string|max:100',
             'satuan' => 'required|string|max:50',
             'minimum_stock' => 'required|integer|min:0',
             'jumlah_stock' => 'nullable|integer|min:0',
@@ -143,6 +144,7 @@ class BahanController extends Controller
                 })->ignore($bahan->id),
             ],
             'nama_bahan' => 'required|string|max:255',
+            'jenis_bahan' => 'nullable|string|max:100',
             'id_gudang' => [
                 'required',
                 Rule::exists('gudangs', 'id')->where(function ($query) use ($user) {

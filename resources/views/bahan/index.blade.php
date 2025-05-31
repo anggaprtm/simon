@@ -53,6 +53,7 @@
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Bahan</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stok</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gudang</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prodi</th>
@@ -65,6 +66,7 @@
                                     <tr class="{{ $bahan->jumlah_stock <= $bahan->minimum_stock ? 'bg-red-100' : '' }}">
                                         <td class="px-6 py-4">{{ $bahan->kode_bahan }}</td>
                                         <td class="px-6 py-4">{{ $bahan->nama_bahan }} ({{ $bahan->merk }})</td>
+                                        <td class="px-6 py-4">{{ $bahan->jenis_bahan ?? '-' }}</td>
                                         <td class="px-6 py-4 font-bold">{{ $bahan->jumlah_stock }} {{ $bahan->satuan }}</td>
                                         <td class="px-6 py-4">{{ $bahan->gudang->nama_gudang }}</td>
                                         <td class="px-6 py-4">{{ $bahan->programStudi->kode_program_studi }}</td>

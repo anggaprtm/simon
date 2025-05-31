@@ -15,6 +15,7 @@ class Bahan extends Model
         'kode_bahan',
         'nama_bahan',
         'merk',
+        'jenis_bahan',
         'id_program_studi',
         'id_gudang',
         'jumlah_stock',

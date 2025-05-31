@@ -17,6 +17,11 @@
         <x-input-error :messages="$errors->get('merk')" class="mt-2" />
     </div>
     <div>
+        <x-input-label for="jenis_bahan" :value="__('Jenis Bahan (Opsional)')" />
+        <x-text-input id="jenis_bahan" class="block mt-1 w-full" type="text" name="jenis_bahan" :value="old('jenis_bahan', $bahan->jenis_bahan ?? '')" placeholder="Contoh: Cairan, Padatan, Komponen"/>
+        <x-input-error :messages="$errors->get('jenis_bahan')" class="mt-2" />
+    </div>
+    <div>
         <x-input-label for="id_gudang" :value="__('Lokasi Gudang')" />
         <select id="id_gudang" name="id_gudang" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm" required>
             <option value="">-- Pilih Gudang --</option>
