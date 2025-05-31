@@ -22,6 +22,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::resource('gudang', GudangController::class);
+    Route::get('bahan/import', [BahanController::class, 'showImportForm'])->name('bahan.showImportForm');
+    Route::post('bahan/import', [BahanController::class, 'import'])->name('bahan.import');
     Route::resource('bahan', BahanController::class);
 
     Route::prefix('transaksi')->name('transaksi.')->group(function() {
@@ -48,9 +50,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{bahan}', [TransaksiStokController::class, 'storePenyesuaian'])->name('store');
     });
 
-    Route::get('bahan/import', [BahanController::class, 'showImportForm'])->name('bahan.showImportForm');
-    Route::post('bahan/import', [BahanController::class, 'import'])->name('bahan.import');
-    Route::resource('bahan', BahanController::class);
     // Grup route untuk Superadmin
     Route::middleware('role:superadmin')->group(function () {
         Route::resource('program-studi', ProgramStudiController::class);
