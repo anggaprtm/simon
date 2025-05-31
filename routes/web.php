@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProgramStudiController;
+use App\Http\Controllers\GudangController;
 
 
 Route::get('/', function () {
@@ -19,9 +20,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Rute yang hanya bisa diakses oleh Superadmin
-Route::middleware(['auth', 'verified', 'role:superadmin'])->group(function () {
-    Route::resource('program-studi', ProgramStudiController::class);
+Route::middleware(['auth', 'verified'])->group(function () {
+    // ... route profile ...
+    
+    // Tambahkan route resource untuk gudang di sini
+    Route::resource('gudang', GudangController::class);
+
+    // Grup route untuk Superadmin
+    Route::middleware('role:superadmin')->group(function () {
+        Route::resource('program-studi', ProgramStudiController::class);
+    });
 });
 
 require __DIR__.'/auth.php';
