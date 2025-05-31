@@ -109,4 +109,71 @@ class GudangController extends Controller
 
         return redirect()->route('gudang.index')->with('success', 'Gudang berhasil dihapus.');
     }
+
+    public function bulkDelete(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:gudangs,id',
+        ]);
+
+        $selectedIds = $request->ids;
+        $deletedCount = 0;
+        $errorMessages = [];
+
+        foreach ($selectedIds as $id) {
+            $gudang = Gudang::find($id);
+
+            if ($gudang) {
+                $canDelete = false;
+                if ($user->role === 'superadmin') {
+                    $canDelete = true;
+                } elseif ($user->role === 'laboran' && $gudang->id_program_studi === $user->id_program_studi) {
+                    // Laboran hanya bisa hapus gudang spesifik prodinya
+                    $canDelete = true;
+                } else {
+                    // Jika gudang umum (id_program_studi == null), laboran tidak bisa hapus
+                    // Hanya superadmin yang bisa hapus gudang umum
+                     if ($gudang->id_program_studi === null) {
+                         $canDelete = false; // Hanya superadmin, sudah di-cover di atas
+                     } else {
+                         $errorMessages[] = "Anda tidak berhak menghapus gudang '{$gudang->nama_gudang}' karena bukan milik prodi Anda.";
+                     }
+                }
+
+                // Logika tambahan: Superadmin bisa hapus gudang umum
+                if ($user->role === 'superadmin' && $gudang->id_program_studi === null) {
+                    $canDelete = true;
+                }
+
+
+                if ($canDelete) {
+                    if ($gudang->bahans()->exists()) { // Cek apakah ada bahan di gudang ini
+                        $errorMessages[] = "Gudang '{$gudang->nama_gudang}' tidak dapat dihapus karena masih ada bahan yang tersimpan di dalamnya.";
+                    } else {
+                        $gudang->delete();
+                        $deletedCount++;
+                    }
+                } else {
+                    // Jika $canDelete false dan belum ada di errorMessages
+                    if(!in_array("Anda tidak berhak menghapus gudang '{$gudang->nama_gudang}'.", $errorMessages) &&
+                       !in_array("Anda tidak berhak menghapus gudang '{$gudang->nama_gudang}' karena bukan milik prodi Anda.", $errorMessages)) {
+                         $errorMessages[] = "Anda tidak berhak menghapus gudang '{$gudang->nama_gudang}'.";
+                    }
+                }
+            }
+        }
+
+        $message = $deletedCount . " gudang berhasil dihapus.";
+        if (!empty($errorMessages)) {
+            // Menggabungkan pesan error menjadi satu string, dipisahkan <br> jika ingin tampil di baris baru
+            $errorString = implode(" \n", $errorMessages); // Ganti \n dengan <br> jika ditampilkan di HTML
+            $message .= " Beberapa gudang tidak dapat dihapus: \n" . $errorString;
+            return redirect()->route('gudang.index')->with('error', $message);
+        }
+
+        return redirect()->route('gudang.index')->with('success', $message);
+    }
 }

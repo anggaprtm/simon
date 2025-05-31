@@ -11,7 +11,12 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     @can('create-gudang')
-                        <div class="flex justify-end mb-4">
+                        <div class="flex justify-end mb-4 space-x-2">
+                            <button type="button" id="bulk-delete-gudang-button" 
+                                class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" 
+                                style="display:none;">
+                                Hapus Terpilih (<span id="selected-gudang-count">0</span>)
+                            </button>
                             <a href="{{ route('gudang.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                                 + Tambah Gudang
                             </a>
@@ -32,6 +37,9 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
+                                 <th class="px-6 py-3 text-left">
+                                    <input type="checkbox" id="select-all-gudang-checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Gudang</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lokasi</th>
@@ -42,6 +50,10 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse ($gudangs as $gudang)
                                 <tr>
+                                    <td class="px-6 py-4">
+                                        {{-- Beri class unik untuk checkbox baris gudang --}}
+                                        <input type="checkbox" name="selected_gudang[]" class="row-gudang-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" value="{{ $gudang->id }}">
+                                    </td>
                                     <td class="px-6 py-4">{{ $loop->iteration }}</td>
                                     <td class="px-6 py-4">{{ $gudang->nama_gudang }}</td>
                                     <td class="px-6 py-4">{{ $gudang->lokasi }}</td>
@@ -74,4 +86,83 @@
             </div>
         </div>
     </div>
+
+     @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const selectAllCheckbox = document.getElementById('select-all-gudang-checkbox');
+            const rowCheckboxes = document.querySelectorAll('.row-gudang-checkbox');
+            const bulkDeleteButton = document.getElementById('bulk-delete-gudang-button');
+            const selectedCountSpan = document.getElementById('selected-gudang-count');
+
+            function updateBulkDeleteButtonState() {
+                if (!selectedCountSpan || !bulkDeleteButton) return; 
+                const selectedRows = document.querySelectorAll('.row-gudang-checkbox:checked');
+                selectedCountSpan.textContent = selectedRows.length;
+                bulkDeleteButton.style.display = selectedRows.length > 0 ? 'inline-block' : 'none';
+            }
+
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', function () {
+                    rowCheckboxes.forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                    });
+                    updateBulkDeleteButtonState();
+                });
+            }
+
+            rowCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function () {
+                    if (selectAllCheckbox) {
+                        if (!this.checked) {
+                            selectAllCheckbox.checked = false;
+                        } else {
+                            const allChecked = Array.from(rowCheckboxes).every(cb => cb.checked);
+                            if (allChecked) {
+                                selectAllCheckbox.checked = true;
+                            }
+                        }
+                    }
+                    updateBulkDeleteButtonState();
+                });
+            });
+
+            if (bulkDeleteButton) {
+                bulkDeleteButton.addEventListener('click', function () {
+                    const selectedIds = Array.from(document.querySelectorAll('.row-gudang-checkbox:checked'))
+                                            .map(cb => cb.value);
+
+                    if (selectedIds.length === 0) {
+                        alert('Pilih setidaknya satu gudang untuk dihapus.');
+                        return;
+                    }
+
+                    if (confirm(`Apakah Anda yakin ingin menghapus ${selectedIds.length} gudang yang terpilih?`)) {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '{{ route("gudang.bulkDelete") }}'; // Action ke route bulk delete gudang
+
+                        const csrfTokenInput = document.createElement('input');
+                        csrfTokenInput.type = 'hidden';
+                        csrfTokenInput.name = '_token';
+                        csrfTokenInput.value = '{{ csrf_token() }}';
+                        form.appendChild(csrfTokenInput);
+
+                        selectedIds.forEach(id => {
+                            const idInput = document.createElement('input');
+                            idInput.type = 'hidden';
+                            idInput.name = 'ids[]';
+                            idInput.value = id;
+                            form.appendChild(idInput);
+                        });
+
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            }
+            updateBulkDeleteButtonState(); // Panggil di awal
+        });
+    </script>
+    @endpush
 </x-app-layout>

@@ -13,9 +13,9 @@
                     <form method="GET" action="{{ route('laporan.stok') }}" class="mb-6 flex flex-wrap items-center gap-4">
                         @if(in_array(Auth::user()->role, ['superadmin', 'fakultas']))
                             <div class="flex-1 min-w-[200px]">
-                                <label for="prodi_id" class="block text-sm font-medium text-gray-700">Program Studi</label>
+                                <label for="prodi_id" class="block text-sm font-medium text-gray-700">Unit/Program Studi</label>
                                 <select name="prodi_id" id="prodi_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                    <option value="">-- Semua Prodi --</option>
+                                    <option value="">-- Semua Unit --</option>
                                     @foreach($programStudis as $prodi)
                                         <option value="{{ $prodi->id }}" {{ request('prodi_id') == $prodi->id ? 'selected' : '' }}>
                                             {{ $prodi->nama_program_studi }}
@@ -43,7 +43,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stok</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gudang</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prodi</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit/Prodi</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kedaluwarsa</th>
                                 </tr>
                             </thead>

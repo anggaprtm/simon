@@ -208,4 +208,48 @@ class BahanController extends Controller
 
         return redirect()->route('bahan.index')->with('success', 'Data bahan berhasil diimpor.');
     }
+
+    public function bulkDelete(Request $request)
+    {
+        $user = Auth::user();
+
+        // Validasi input: pastikan 'ids' ada dan berupa array
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:bahans,id', // Pastikan setiap ID ada di tabel bahans
+        ]);
+
+        $selectedIds = $request->ids;
+        $deletedCount = 0;
+        $errorMessages = [];
+
+        foreach ($selectedIds as $id) {
+            $bahan = Bahan::find($id);
+
+            if ($bahan) {
+                // Otorisasi: Hanya laboran yang bisa hapus bahan prodinya
+                if ($user->role === 'laboran' && $user->id_program_studi === $bahan->id_program_studi) {
+                    // Kondisi hapus: Stok harus 0 (sama seperti di method destroy)
+                    if ($bahan->jumlah_stock > 0) {
+                        $errorMessages[] = "Bahan '{$bahan->nama_bahan}' ({$bahan->kode_bahan}) tidak dapat dihapus karena masih memiliki stok.";
+                    } else {
+                        $bahan->delete();
+                        $deletedCount++;
+                    }
+                } else {
+                    // Jika bukan laboran yang berhak, catat sebagai error otorisasi
+                    // (meskipun idealnya mereka tidak akan bisa mengirim ID ini)
+                    $errorMessages[] = "Anda tidak berhak menghapus bahan '{$bahan->nama_bahan}' ({$bahan->kode_bahan}).";
+                }
+            }
+        }
+
+        $message = $deletedCount . " bahan berhasil dihapus.";
+        if (!empty($errorMessages)) {
+            $message .= " Beberapa bahan tidak dapat dihapus: " . implode(', ', $errorMessages);
+            return redirect()->route('bahan.index')->with('error', $message);
+        }
+
+        return redirect()->route('bahan.index')->with('success', $message);
+    }
 }

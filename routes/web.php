@@ -21,9 +21,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('gudang/bulk-delete', [GudangController::class, 'bulkDelete'])->name('gudang.bulkDelete');
     Route::resource('gudang', GudangController::class);
     Route::get('bahan/import', [BahanController::class, 'showImportForm'])->name('bahan.showImportForm');
     Route::post('bahan/import', [BahanController::class, 'import'])->name('bahan.import');
+    Route::post('bahan/bulk-delete', [BahanController::class, 'bulkDelete'])->name('bahan.bulkDelete');
     Route::resource('bahan', BahanController::class);
 
     Route::prefix('transaksi')->name('transaksi.')->group(function() {

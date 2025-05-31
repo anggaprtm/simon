@@ -28,7 +28,7 @@
                     @if(Auth::user()->role == 'superadmin')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link :href="route('program-studi.index')" :active="request()->routeIs('program-studi.*')">
-                            {{ __('Program Studi') }}
+                            Unit / Program Studi
                         </x-nav-link>
                     </div>
                     @endif
@@ -57,7 +57,7 @@
 
                     <x-slot name="content">
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            {{ __('Profil') }}
                         </x-dropdown-link>
 
                         <!-- Authentication -->
@@ -67,7 +67,7 @@
                             <x-dropdown-link :href="route('logout')"
                                     onclick="event.preventDefault();
                                                 this.closest('form').submit();">
-                                {{ __('Log Out') }}
+                                {{ __('Keluar') }}
                             </x-dropdown-link>
                         </form>
                     </x-slot>

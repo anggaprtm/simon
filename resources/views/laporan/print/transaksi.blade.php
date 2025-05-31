@@ -14,7 +14,7 @@
                 <th scope="col" class="px-4 py-3 border">Tanggal</th>
                 <th scope="col" class="px-4 py-3 border">Jenis</th>
                 <th scope="col" class="px-4 py-3 border">Nama Bahan</th>
-                <th scope="col" class="px-4 py-3 border">Prodi</th>
+                <th scope="col" class="px-4 py-3 border">Unit/Prodi</th>
                 <th scope="col" class="px-4 py-3 border">Jumlah</th>
                 <th scope="col" class="px-4 py-3 border">Oleh</th>
                 <th scope="col" class="px-4 py-3 border">Keterangan</th>

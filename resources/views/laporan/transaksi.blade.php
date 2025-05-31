@@ -18,9 +18,9 @@
                             {{-- Filter Program Studi (hanya untuk superadmin/fakultas) --}}
                             @if(in_array(Auth::user()->role, ['superadmin', 'fakultas']))
                                 <div>
-                                    <label for="prodi_id" class="block text-sm font-medium text-gray-700">Program Studi</label>
+                                    <label for="prodi_id" class="block text-sm font-medium text-gray-700">Unit</label>
                                     <select name="prodi_id" id="prodi_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                        <option value="">-- Semua Prodi --</option>
+                                        <option value="">-- Semua Unit --</option>
                                         @foreach($programStudis as $prodi)
                                             <option value="{{ $prodi->id }}" {{ request('prodi_id') == $prodi->id ? 'selected' : '' }}>
                                                 {{ $prodi->nama_program_studi }}
