@@ -7,7 +7,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     {{-- Tombol Tambah hanya untuk yang berhak --}}
@@ -27,22 +27,58 @@
                         </div>
                     @endcan
 
-                    {{-- Filter untuk Superadmin & Fakultas --}}
-                    @if(in_array(Auth::user()->role, ['superadmin', 'fakultas']))
-                        <form method="GET" action="{{ route('bahan.index') }}" class="mb-4">
-                            <div class="flex items-center">
-                                <select name="prodi_id" class="border-gray-300 rounded-md shadow-sm">
-                                    <option value="">-- Semua Unit --</option>
-                                    @foreach($programStudis as $prodi)
-                                        <option value="{{ $prodi->id }}" {{ request('prodi_id') == $prodi->id ? 'selected' : '' }}>
-                                            {{ $prodi->nama_program_studi }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <button type="submit" class="ml-2 bg-gray-700 text-white font-bold py-2 px-4 rounded">Filter</button>
+                    <form method="GET" action="{{ route('bahan.index') }}" class="mb-6">
+                        @if(in_array(Auth::user()->role, ['superadmin', 'fakultas']))
+                            {{-- Layout untuk Superadmin/Fakultas dengan filter prodi & search --}}
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                                <div class="md:col-span-4 lg:col-span-3">
+                                    <label for="prodi_id" class="block text-sm font-medium text-gray-700">Filter Unit/Prodi</label>
+                                    <select name="prodi_id" id="prodi_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="">-- Semua Unit --</option>
+                                        @foreach($programStudis as $prodi)
+                                            <option value="{{ $prodi->id }}" {{ $selectedProdiId == $prodi->id ? 'selected' : '' }}>
+                                                {{ $prodi->nama_program_studi }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="md:col-span-5 lg:col-span-6">
+                                    <label for="search" class="block text-sm font-medium text-gray-700">Cari Bahan</label>
+                                    <input type="text" name="search" id="search" value="{{ $search ?? '' }}" placeholder="Kode, Nama, Merk, Jenis..." class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <div class="md:col-span-3 lg:col-span-3 flex items-center space-x-2">
+                                    <button type="submit" class="w-full md:w-auto bg-blue-600 text-white px-4 py-2 rounded-md shadow-sm hover:bg-blue-700 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-1 hidden md:inline-block">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                                        </svg>
+                                        Cari/Filter
+                                    </button>
+                                    <a href="{{ route('bahan.index') }}" class="w-full md:w-auto bg-gray-300 text-gray-700 px-4 py-2 rounded-md shadow-sm hover:bg-gray-400 text-center">
+                                        Reset
+                                    </a>
+                                </div>
                             </div>
-                        </form>
-                    @endif
+                        @else
+                            {{-- Layout untuk Laboran (tanpa filter prodi, search lebih dominan dengan Flexbox) --}}
+                            <div class="flex flex-col md:flex-row md:items-end gap-3">
+                                <div class="flex-grow"> {{-- Div ini akan mengambil sisa ruang yang tersedia --}}
+                                    <label for="search" class="block text-sm font-medium text-gray-700">Cari Bahan</label>
+                                    <input type="text" name="search" id="search" value="{{ $search ?? '' }}" placeholder="Masukkan kode, nama, merk, atau jenis bahan..." class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <div class="flex items-center space-x-2 mt-3 md:mt-0 shrink-0"> {{-- Tombol tidak akan mengecilkan input --}}
+                                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md shadow-sm hover:bg-blue-700 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-1 hidden sm:inline-block"> {{-- Ubah md jadi sm --}}
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                                        </svg>
+                                        Cari
+                                    </button>
+                                    <a href="{{ route('bahan.index') }}" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md shadow-sm hover:bg-gray-400 text-center">
+                                        Reset
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
+                    </form>
 
                     @if (session('success'))
                         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -75,7 +111,15 @@
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse ($bahans as $bahan)
-                                    <tr class="{{ $bahan->jumlah_stock <= $bahan->minimum_stock ? 'bg-red-100' : '' }}">
+                                    <tr class=" @if ($bahan->jumlah_stock <= $bahan->minimum_stock && $bahan->jumlah_stock > 0)
+                                                bg-red-100 hover:bg-red-200 {{-- Warna untuk stok menipis --}}
+                                            @elseif ($loop->odd)
+                                                bg-gray-50 hover:bg-gray-100 {{-- Warna untuk baris ganjil --}}
+                                            @else
+                                                bg-white hover:bg-gray-100 {{-- Warna untuk baris genap (atau default) --}}
+                                            @endif
+                                            transition-colors duration-150 ease-in-out {{-- Efek transisi halus untuk hover --}}
+                                    ">
                                         <td class="px-6 py-4">
                                             <input type="checkbox" name="selected_bahan[]" class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" value="{{ $bahan->id }}">
                                         </td>
@@ -145,6 +189,9 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+                    <div class="mt-6">
+                        {{ $bahans->appends(request()->query())->links() }}
                     </div>
                 </div>
             </div>

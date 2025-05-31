@@ -20,23 +20,37 @@ class BahanController extends Controller
         $this->authorize('view-any-bahan');
 
         $user = Auth::user();
+        $search = $request->input('search'); // Ambil input pencarian
+        $selectedProdiId = $request->input('prodi_id');
         $query = Bahan::with(['programStudi', 'gudang']);
 
         // Filter untuk Superadmin & Fakultas
         $programStudis = [];
         if (in_array($user->role, ['superadmin', 'fakultas'])) {
             $programStudis = ProgramStudi::orderBy('nama_program_studi')->get();
-            if ($request->filled('prodi_id')) {
-                $query->where('id_program_studi', $request->prodi_id);
+            if ($selectedProdiId) { // Jika ada filter prodi_id
+                $query->where('id_program_studi', $selectedProdiId);
             }
         } else {
             // Filter otomatis untuk Laboran
             $query->where('id_program_studi', $user->id_program_studi);
         }
 
-        $bahans = $query->orderBy('nama_bahan')->get();
+        // Terapkan kondisi pencarian jika ada input search
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_bahan', 'like', '%' . $search . '%')
+                  ->orWhere('kode_bahan', 'like', '%' . $search . '%')
+                  ->orWhere('merk', 'like', '%' . $search . '%')
+                  ->orWhere('jenis_bahan', 'like', '%' . $search . '%');
+            });
+        }
 
-        return view('bahan.index', compact('bahans', 'programStudis'));
+        $bahans = $query->orderByRaw("SUBSTRING_INDEX(kode_bahan, '-', 1) ASC")
+                  ->orderByRaw("CAST(SUBSTRING_INDEX(kode_bahan, '-', -1) AS UNSIGNED) ASC")
+                  ->paginate(10);
+                  
+        return view('bahan.index', compact('bahans', 'programStudis', 'selectedProdiId', 'search'));
     }
 
     public function create()
