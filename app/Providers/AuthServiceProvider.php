@@ -70,5 +70,14 @@ class AuthServiceProvider extends ServiceProvider
             // Logikanya sama dengan update
             return Gate::allows('update-gudang', $gudang);
         });
+        
+        Gate::define('view-bahan', function (User $user, Bahan $bahan) {
+        // Superadmin dan Fakultas bisa melihat semua bahan
+        if (in_array($user->role, ['superadmin', 'fakultas'])) {
+            return true;
+        }
+        // Laboran hanya bisa melihat bahan milik prodinya
+        return $user->role === 'laboran' && $user->id_program_studi === $bahan->id_program_studi;
+        });
         }
 }

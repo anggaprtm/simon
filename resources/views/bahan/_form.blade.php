@@ -1,4 +1,4 @@
-{{-- resources/views/bahan/_form.blade.php --}}
+{{-- resources/views/bahan/_form.blade.php (SUDAH DIPERBAIKI) --}}
 @csrf
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div>
@@ -40,10 +40,10 @@
     </div>
     <div>
         <x-input-label for="tanggal_kedaluwarsa" :value="__('Tanggal Kedaluwarsa (Opsional)')" />
-        <x-text-input id="tanggal_kedaluwarsa" class="block mt-1 w-full" type="date" name="tanggal_kedaluwarsa" :value="old('tanggal_kedaluwarsa', $bahan->tanggal_kedaluwarsa ? \Carbon\Carbon::parse($bahan->tanggal_kedaluwarsa)->format('Y-m-d') : '')" />
+        <x-text-input id="tanggal_kedaluwarsa" class="block mt-1 w-full" type="date" name="tanggal_kedaluwarsa" :value="old('tanggal_kedaluwarsa', isset($bahan) && $bahan->tanggal_kedaluwarsa ? \Carbon\Carbon::parse($bahan->tanggal_kedaluwarsa)->format('Y-m-d') : '')" />
         <x-input-error :messages="$errors->get('tanggal_kedaluwarsa')" class="mt-2" />
     </div>
-    
+
     {{-- Field Stok Awal hanya ada di halaman Create --}}
     @if(Route::is('bahan.create'))
     <div>

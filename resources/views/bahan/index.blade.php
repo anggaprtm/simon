@@ -70,16 +70,52 @@
                                         <td class="px-6 py-4">{{ $bahan->programStudi->kode_program_studi }}</td>
                                         <td class="px-6 py-4">{{ $bahan->tanggal_kedaluwarsa ? \Carbon\Carbon::parse($bahan->tanggal_kedaluwarsa)->format('d M Y') : '-' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            @can('update-bahan', $bahan)
-                                                <a href="{{ route('bahan.edit', $bahan->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                                            @endcan
-                                            @can('delete-bahan', $bahan)
-                                                <form action="{{ route('bahan.destroy', $bahan->id) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="text-red-600 hover:text-red-900 ml-4">Hapus</button>
-                                                </form>
-                                            @endcan
+                                            <x-dropdown align="left" width="48">
+                                                <x-slot name="trigger">
+                                                    <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                                                        <div>Aksi</div>
+                                                        <div class="ms-1">
+                                                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                            </svg>
+                                                        </div>
+                                                    </button>
+                                                </x-slot>
+
+                                                <x-slot name="content">
+                                                    {{-- Tombol Stok Masuk & Keluar hanya untuk Laboran --}}
+                                                    @can('update-bahan', $bahan)
+                                                        <x-dropdown-link :href="route('transaksi.createMasuk', $bahan->id)">
+                                                            {{ __('Stok Masuk') }}
+                                                        </x-dropdown-link>
+                                                        <x-dropdown-link :href="route('transaksi.createKeluar', $bahan->id)">
+                                                            {{ __('Stok Keluar') }}
+                                                        </x-dropdown-link>
+                                                    @endcan
+
+                                                    {{-- Tombol Riwayat untuk semua yang bisa melihat --}}
+                                                    <x-dropdown-link :href="route('transaksi.history', $bahan->id)">
+                                                        {{ __('Riwayat') }}
+                                                    </x-dropdown-link>
+
+                                                    {{-- Tombol Edit & Hapus Metadata Bahan --}}
+                                                    @can('update-bahan', $bahan)
+                                                        <div class="border-t border-gray-200"></div>
+                                                        <x-dropdown-link :href="route('bahan.edit', $bahan->id)">
+                                                            {{ __('Edit Info Bahan') }}
+                                                        </x-dropdown-link>
+                                                    @endcan
+                                                    @can('delete-bahan', $bahan)
+                                                        <form action="{{ route('bahan.destroy', $bahan->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus?');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <x-dropdown-link :href="route('bahan.destroy', $bahan->id)" onclick="event.preventDefault(); this.closest('form').submit();">
+                                                                {{ __('Hapus Bahan') }}
+                                                            </x-dropdown-link>
+                                                        </form>
+                                                    @endcan
+                                                </x-slot>
+                                            </x-dropdown>
                                         </td>
                                     </tr>
                                 @empty
