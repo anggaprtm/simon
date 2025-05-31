@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use App\Models\Gudang; // <-- TAMBAHKAN INI
 use App\Models\User;   // <-- TAMBAHKAN INI
+use App\Models\Bahan; // <-- TAMBAHKAN INI
 use Illuminate\Support\Facades\Gate; // <-- TAMBAHKAN INI
 
 class AuthServiceProvider extends ServiceProvider
@@ -23,6 +24,25 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::define('view-any-bahan', function (User $user) {
+        // Semua user boleh melihat halaman daftar bahan
+        return true;
+        });
+
+        Gate::define('create-bahan', function (User $user) {
+            // Hanya laboran yang bisa menambah bahan
+            return $user->role === 'laboran';
+        });
+
+        Gate::define('update-bahan', function (User $user, Bahan $bahan) {
+            // Hanya laboran yang bisa mengedit bahan milik prodinya sendiri
+            return $user->role === 'laboran' && $user->id_program_studi === $bahan->id_program_studi;
+        });
+
+        Gate::define('delete-bahan', function (User $user, Bahan $bahan) {
+            // Logikanya sama dengan update
+            return Gate::allows('update-bahan', $bahan);
+        });
         // Gate untuk CRUD Gudang
         Gate::define('view-any-gudang', function (User $user) {
             // Semua user yang login bisa melihat daftar gudang
