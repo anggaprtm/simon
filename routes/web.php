@@ -8,6 +8,7 @@ use App\Http\Controllers\BahanController;
 use App\Http\Controllers\TransaksiStokController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LaporanController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -34,6 +35,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Rute untuk melihat riwayat
         Route::get('/{bahan}/riwayat', [TransaksiStokController::class, 'history'])->name('history');
+    });
+
+    Route::prefix('laporan')->name('laporan.')->group(function() {
+        Route::get('/', [LaporanController::class, 'index'])->name('index'); // Menu Laporan
+        Route::get('/stok', [LaporanController::class, 'stok'])->name('stok'); // Laporan Stok
+        Route::get('/transaksi', [LaporanController::class, 'transaksi'])->name('transaksi'); // Laporan Transaksi
     });
     // Grup route untuk Superadmin
     Route::middleware('role:superadmin')->group(function () {
