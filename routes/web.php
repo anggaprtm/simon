@@ -47,6 +47,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{bahan}', [TransaksiStokController::class, 'createPenyesuaian'])->name('create');
         Route::post('/{bahan}', [TransaksiStokController::class, 'storePenyesuaian'])->name('store');
     });
+
+    Route::get('bahan/import', [BahanController::class, 'showImportForm'])->name('bahan.showImportForm');
+    Route::post('bahan/import', [BahanController::class, 'import'])->name('bahan.import');
+    Route::resource('bahan', BahanController::class);
     // Grup route untuk Superadmin
     Route::middleware('role:superadmin')->group(function () {
         Route::resource('program-studi', ProgramStudiController::class);

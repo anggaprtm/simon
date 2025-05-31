@@ -13,6 +13,9 @@
                     {{-- Tombol Tambah hanya untuk yang berhak --}}
                     @can('create-bahan')
                         <div class="flex justify-end mb-4">
+                            <a href="{{ route('bahan.showImportForm') }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                                Import Bahan
+                            </a>
                             <a href="{{ route('bahan.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                                 + Tambah Bahan
                             </a>

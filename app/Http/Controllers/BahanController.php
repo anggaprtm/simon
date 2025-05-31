@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use App\Imports\BahanImport;
+use Maatwebsite\Excel\Facades\Excel; // Import facade Excel
 
 class BahanController extends Controller
 {
@@ -173,5 +175,37 @@ class BahanController extends Controller
         $bahan->delete();
 
         return redirect()->route('bahan.index')->with('success', 'Bahan berhasil dihapus.');
+    }
+
+    // Menampilkan halaman form import
+    public function showImportForm()
+    {
+        $this->authorize('create-bahan');
+        return view('bahan.import');
+    }
+
+    // Memproses file yang di-upload
+    public function import(Request $request)
+    {
+        $this->authorize('create-bahan');
+
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls',
+        ]);
+
+        try {
+            // Saat mengimpor, kita juga kirim data user yg login ke class import
+            Excel::import(new BahanImport(Auth::user()), $request->file('file'));
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            // Jika ada error validasi dari file excel, kumpulkan dan tampilkan
+             $failures = $e->failures();
+             $errorMessages = [];
+             foreach ($failures as $failure) {
+                 $errorMessages[] = "Baris " . $failure->row() . ": " . implode(', ', $failure->errors());
+             }
+             return redirect()->route('bahan.showImportForm')->with('import_errors', $errorMessages);
+        }
+
+        return redirect()->route('bahan.index')->with('success', 'Data bahan berhasil diimpor.');
     }
 }
