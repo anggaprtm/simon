@@ -123,4 +123,64 @@ class TransaksiStokController extends Controller
                                 
         return view('transaksi.history', compact('bahan', 'transaksis'));
     }
+
+     // Method untuk menampilkan form penyesuaian
+    public function createPenyesuaian(Bahan $bahan)
+    {
+        Gate::authorize('update-bahan', $bahan);
+        return view('penyesuaian.create', compact('bahan'));
+    }
+
+    // Method untuk memproses dan menyimpan penyesuaian
+    public function storePenyesuaian(Request $request, Bahan $bahan)
+    {
+        Gate::authorize('update-bahan', $bahan);
+
+        $request->validate([
+            'stok_fisik' => 'required|integer|min:0',
+            'keterangan' => 'required|string',
+        ]);
+
+        try {
+            DB::transaction(function () use ($request, $bahan) {
+                // Kunci baris agar tidak ada proses lain yang mengubah stok saat ini
+                $bahan = Bahan::where('id', $bahan->id)->lockForUpdate()->firstOrFail();
+                
+                $stok_sistem = $bahan->jumlah_stock;
+                $stok_fisik = (int) $request->stok_fisik;
+                
+                // Hitung selisihnya
+                $selisih = $stok_fisik - $stok_sistem;
+
+                // Jika tidak ada selisih, tidak perlu lakukan apa-apa
+                if ($selisih == 0) {
+                    // Kita bisa redirect dengan pesan 'info' (opsional)
+                    // Untuk saat ini, kita anggap tidak terjadi apa-apa
+                    return;
+                }
+
+                $jenis_transaksi = $selisih > 0 ? 'penyesuaian_masuk' : 'penyesuaian_keluar';
+                
+                // 1. Catat Transaksi Penyesuaian
+                Transaksi::create([
+                    'id_bahan' => $bahan->id,
+                    'id_user' => Auth::id(),
+                    'jenis_transaksi' => $jenis_transaksi,
+                    'jumlah' => abs($selisih), // Jumlah transaksi selalu positif
+                    'stock_sebelum' => $stok_sistem,
+                    'stock_sesudah' => $stok_fisik,
+                    'tanggal_transaksi' => now(),
+                    'keterangan' => $request->keterangan,
+                ]);
+
+                // 2. Update stok di tabel bahan menjadi sama dengan stok fisik
+                $bahan->update(['jumlah_stock' => $stok_fisik]);
+            });
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal menyimpan penyesuaian: ' . $e->getMessage())->withInput();
+        }
+        
+        return redirect()->route('bahan.index')->with('success', 'Stok bahan berhasil disesuaikan.');
+    }
 }

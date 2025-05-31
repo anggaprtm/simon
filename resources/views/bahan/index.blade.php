@@ -93,6 +93,9 @@
                                                         <x-dropdown-link :href="route('transaksi.createKeluar', $bahan->id)">
                                                             {{ __('Stok Keluar') }}
                                                         </x-dropdown-link>
+                                                        <x-dropdown-link :href="route('penyesuaian.create', $bahan->id)" class="text-orange-600 hover:bg-orange-50">
+                                                            {{ __('Penyesuaian Stok') }}
+                                                        </x-dropdown-link>
                                                     @endcan
 
                                                     {{-- Tombol Riwayat untuk semua yang bisa melihat --}}
