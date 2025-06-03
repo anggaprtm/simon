@@ -12,6 +12,7 @@ use App\Http\Controllers\LaporanController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::redirect('/', '/login');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');
