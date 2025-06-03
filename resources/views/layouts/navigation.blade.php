@@ -30,6 +30,9 @@
                         <x-nav-link :href="route('program-studi.index')" :active="request()->routeIs('program-studi.*')">
                             Unit / Program Studi
                         </x-nav-link>
+                        <x-nav-link :href="route('satuan.index')" :active="request()->routeIs('satuan.*')"> {{-- <-- TAMBAHKAN INI --}}
+                            {{ __('Master Satuan') }}
+                        </x-nav-link>
                     </div>
                     @endif
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">

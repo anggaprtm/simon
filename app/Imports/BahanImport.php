@@ -14,6 +14,7 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Validators\ValidationException;
+use App\Models\Satuan;
 use Illuminate\Validation\Rule;
 
 class BahanImport implements ToCollection, WithHeadingRow, WithValidation
@@ -44,7 +45,14 @@ class BahanImport implements ToCollection, WithHeadingRow, WithValidation
                         Log::error("CRITICAL: Gudang '{$row['nama_gudang']}' tidak ditemukan MESKIPUN LOLOS VALIDASI untuk kode bahan '{$row['kode_bahan']}'.");
                         return; 
                     }
-                    
+
+                    $satuanModel = Satuan::where('nama_satuan', $row['nama_satuan'])->first();
+                    if (!$satuanModel) {
+                        // Ini idealnya tidak terjadi jika validasi di rules() bekerja
+                        Log::error("CRITICAL: Satuan '{$row['nama_satuan']}' tidak ditemukan MESKIPUN LOLOS VALIDASI untuk kode bahan '{$row['kode_bahan']}'.");
+                        return;
+                    }
+
                     $stokAwal = $row['jumlah_stock_awal'] ?? 0;
 
                     $bahan = Bahan::create([
@@ -53,7 +61,7 @@ class BahanImport implements ToCollection, WithHeadingRow, WithValidation
                         'merk'              => $row['merk'],
                         'jenis_bahan'       => $row['jenis_bahan'],
                         'id_gudang'         => $gudang->id,
-                        'satuan'            => $row['satuan'],
+                        'id_satuan'         => $satuanModel->id,
                         'minimum_stock'     => $row['minimum_stock'] ?? 0,
                         'jumlah_stock'      => $stokAwal,
                         'tanggal_kedaluwarsa' => $row['tanggal_kedaluwarsa'],
@@ -98,6 +106,7 @@ class BahanImport implements ToCollection, WithHeadingRow, WithValidation
             '*.nama_bahan' => 'required|string|max:255',
             '*.merk' => 'nullable|string|max:255',
             '*.jenis_bahan' => 'nullable|string|max:100',
+            '*.nama_satuan' => 'required|string|max:50|exists:satuans,nama_satuan',
             '*.nama_gudang' => [
                 'required',
                 'string',
@@ -109,7 +118,6 @@ class BahanImport implements ToCollection, WithHeadingRow, WithValidation
                                  ->orWhere('id_program_studi', $this->user->id_program_studi);
                 })
             ],
-            '*.satuan' => 'required|string|max:50',
             '*.minimum_stock' => 'nullable|integer|min:0',
             '*.jumlah_stock_awal' => 'nullable|integer|min:0',
             '*.tanggal_kedaluwarsa' => 'nullable|date_format:Y-m-d', // Pastikan format tanggal YYYY-MM-DD
@@ -125,8 +133,9 @@ class BahanImport implements ToCollection, WithHeadingRow, WithValidation
             '*.nama_bahan.required' => 'Nama bahan wajib diisi.',
             '*.nama_gudang.required' => 'Nama gudang wajib diisi.',
             '*.nama_gudang.exists' => 'Nama gudang tidak terdaftar (silahkan cek daftar gudang).',
-            '*.satuan.required' => 'Satuan wajib diisi.',
             '*.tanggal_kedaluwarsa.date_format' => 'Format tanggal kedaluwarsa harus YYYY-MM-DD.',
+            '*.nama_satuan.required' => 'Nama satuan wajib diisi.',
+            '*.nama_satuan.exists' => 'Nama satuan tidak terdaftar di master satuan.',
         ];
     }
 

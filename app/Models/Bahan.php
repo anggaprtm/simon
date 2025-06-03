@@ -18,6 +18,7 @@ class Bahan extends Model
         'jenis_bahan',
         'id_program_studi',
         'id_gudang',
+        'id_satuan',
         'jumlah_stock',
         'satuan',
         'minimum_stock',
@@ -55,5 +56,10 @@ class Bahan extends Model
     public function transaksis(): HasMany
     {
         return $this->hasMany(Transaksi::class, 'id_bahan');
+    }
+
+    public function satuanRel() 
+    {
+        return $this->belongsTo(Satuan::class, 'id_satuan');
     }
 }

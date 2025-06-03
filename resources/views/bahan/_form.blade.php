@@ -34,9 +34,17 @@
         <x-input-error :messages="$errors->get('id_gudang')" class="mt-2" />
     </div>
     <div>
-        <x-input-label for="satuan" :value="__('Satuan')" />
-        <x-text-input id="satuan" class="block mt-1 w-full" type="text" name="satuan" :value="old('satuan', $bahan->satuan ?? '')" required placeholder="Contoh: ml, gr, pcs" />
-        <x-input-error :messages="$errors->get('satuan')" class="mt-2" />
+        <x-input-label for="id_satuan" :value="__('Satuan')" />
+        <select id="id_satuan" name="id_satuan" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
+            <option value="">-- Pilih Satuan --</option>
+            @foreach ($satuans as $satuan)
+                <option value="{{ $satuan->id }}" 
+                    {{ old('id_satuan', isset($bahan) ? $bahan->id_satuan : '') == $satuan->id ? 'selected' : '' }}>
+                    {{ $satuan->nama_satuan }} ({{ $satuan->keterangan_satuan }})
+                </option>
+            @endforeach
+        </select>
+        <x-input-error :messages="$errors->get('id_satuan')" class="mt-2" />
     </div>
     <div>
         <x-input-label for="minimum_stock" :value="__('Stok Minimum')" />

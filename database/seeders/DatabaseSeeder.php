@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
          $this->call([
             ProgramStudiSeeder::class, // Jalankan ini dulu
             UserSeeder::class,         // Baru jalankan ini
+            SatuanSeeder::class,       // Satuan harus ada sebelum Bahan
          ]);
         // \App\Models\User::factory()->create([
         //     'name' => 'Test User',

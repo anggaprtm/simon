@@ -9,6 +9,7 @@ use App\Http\Controllers\TransaksiStokController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\SatuanController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -56,6 +57,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Grup route untuk Superadmin
     Route::middleware('role:superadmin')->group(function () {
         Route::resource('program-studi', ProgramStudiController::class);
+        Route::resource('satuan', SatuanController::class);
     });
 });
 

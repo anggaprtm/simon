@@ -53,7 +53,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $bahan->kode_bahan }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $bahan->nama_bahan }} ({{ $bahan->merk }})</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $bahan->jenis_bahan ?? '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap font-bold">{{ $bahan->jumlah_stock }} {{ $bahan->satuan }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap font-bold">{{ $bahan->jumlah_stock }} {{ $bahan->satuanRel->nama_satuan ?? '-' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $bahan->gudang->nama_gudang }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $bahan->programStudi->kode_program_studi }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $bahan->tanggal_kedaluwarsa ? \Carbon\Carbon::parse($bahan->tanggal_kedaluwarsa)->format('d M Y') : '-' }}</td>

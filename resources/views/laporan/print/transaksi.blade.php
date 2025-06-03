@@ -27,7 +27,7 @@
                     <td class="px-4 py-2 border whitespace-nowrap">{{ ucwords(str_replace('_', ' ', $transaksi->jenis_transaksi)) }}</td>
                     <td class="px-4 py-2 border">{{ $transaksi->bahan->nama_bahan ?? 'N/A' }}</td>
                     <td class="px-4 py-2 border">{{ $transaksi->bahan->programStudi->kode_program_studi ?? 'N/A' }}</td>
-                    <td class="px-4 py-2 border whitespace-nowrap">{{ $transaksi->jumlah }} {{ $transaksi->bahan->satuan ?? '' }}</td>
+                    <td class="px-4 py-2 border whitespace-nowrap">{{ $transaksi->jumlah }} {{ $transaksi->bahan->satuanRel->nama_satuan ?? '' }}</td>
                     <td class="px-4 py-2 border">{{ $transaksi->user->name ?? 'N/A' }}</td>
                     <td class="px-4 py-2 border">{{ $transaksi->keterangan }}</td>
                 </tr>

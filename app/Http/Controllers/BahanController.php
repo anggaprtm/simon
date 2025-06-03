@@ -6,6 +6,7 @@ use App\Models\Bahan;
 use App\Models\Gudang;
 use App\Models\ProgramStudi;
 use App\Models\Transaksi;
+use App\Models\Satuan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -65,7 +66,9 @@ class BahanController extends Controller
                          ->orderBy('nama_gudang')
                          ->get();
 
-        return view('bahan.create', compact('gudangs'));
+        $satuans = Satuan::orderBy('nama_satuan')->get();
+
+        return view('bahan.create', compact('gudangs', 'satuans'));
     }
 
     public function store(Request $request)
@@ -90,7 +93,7 @@ class BahanController extends Controller
                 }),
             ],
             'jenis_bahan' => 'nullable|string|max:100',
-            'satuan' => 'required|string|max:50',
+            'id_satuan' => 'required|exists:satuans,id',
             'minimum_stock' => 'required|integer|min:0',
             'jumlah_stock' => 'nullable|integer|min:0',
             'tanggal_kedaluwarsa' => 'nullable|date',
@@ -105,7 +108,7 @@ class BahanController extends Controller
                 'merk' => $request->merk,
                 'id_program_studi' => $user->id_program_studi, // Otomatis
                 'id_gudang' => $request->id_gudang,
-                'satuan' => $request->satuan,
+                'id_satuan' => $request->id_satuan,
                 'minimum_stock' => $request->minimum_stock,
                 'jumlah_stock' => $request->jumlah_stock ?? 0, // Set stok awal
                 'tanggal_kedaluwarsa' => $request->tanggal_kedaluwarsa,
@@ -144,6 +147,8 @@ class BahanController extends Controller
                          ->orderBy('nama_gudang')
                          ->get();
 
+        $satuans = Satuan::orderBy('nama_satuan')->get();
+
         return view('bahan.edit', compact('bahan', 'gudangs'));
     }
 
@@ -168,11 +173,14 @@ class BahanController extends Controller
                     return $query->whereNull('id_program_studi')->orWhere('id_program_studi', $user->id_program_studi);
                 }),
             ],
+            'id_satuan' => 'required|exists:satuans,id',
             // ... validasi lain seperti di store, kecuali jumlah_stock ...
         ]);
         
-        // Stok tidak diupdate dari sini, hanya metadata
-        $bahan->update($request->except('jumlah_stock'));
+        $dataToUpdate = $request->except(['jumlah_stock', '_token', '_method']);
+        $dataToUpdate['id_satuan'] = $request->id_satuan; // Pastikan id_satuan diupdate
+
+        $bahan->update($dataToUpdate);
 
         return redirect()->route('bahan.index')->with('success', 'Data bahan berhasil diperbarui.');
     }

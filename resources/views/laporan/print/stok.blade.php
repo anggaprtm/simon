@@ -6,6 +6,7 @@
             <tr>
                 <th scope="col" class="px-6 py-3">Kode</th>
                 <th scope="col" class="px-6 py-3">Nama Bahan</th>
+                <th scope="col" class="px-6 py-3">Stok</th>
                 {{-- ... header kolom lainnya ... --}}
             </tr>
         </thead>
@@ -14,6 +15,7 @@
             <tr class="bg-white border-b">
                 <td class="px-6 py-4">{{ $bahan->kode_bahan }}</td>
                 <td class="px-6 py-4">{{ $bahan->nama_bahan }}</td>
+                <td class="px-6 py-4">{{ $bahan->jumlah_stock }} {{ $bahan->satuanRel->nama_satuan ?? '-' }}</td>
                 {{-- ... data kolom lainnya ... --}}
             </tr>
             @endforeach
