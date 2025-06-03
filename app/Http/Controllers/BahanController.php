@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use App\Imports\BahanImport;
 use Maatwebsite\Excel\Facades\Excel; // Import facade Excel
+use Illuminate\Support\Facades\Log;
 
 class BahanController extends Controller
 {
@@ -215,10 +216,19 @@ class BahanController extends Controller
              $failures = $e->failures();
              $errorMessages = [];
              foreach ($failures as $failure) {
-                 $errorMessages[] = "Baris " . $failure->row() . ": " . implode(', ', $failure->errors());
+                // $failure->row(); // Baris error
+                // $failure->attribute(); // Kolom error (misal: 'nama_gudang')
+                // $failure->errors(); // Array pesan error untuk atribut tsb
+                // $failure->values(); // Nilai data di baris tersebut
+                    $errors = implode(', ', $failure->errors()); 
+                    $errorMessages[] = "Baris " . $failure->row() . " (Kolom: " . $failure->attribute() ."): " . $errors . " [Nilai: " . ($failure->values()[$failure->attribute()] ?? 'N/A') ."]";
              }
              return redirect()->route('bahan.showImportForm')->with('import_errors', $errorMessages);
-        }
+        } catch (\Exception $e) {
+        // Menangkap error umum lainnya
+        Log::error("Error umum saat import: " . $e->getMessage());
+        return redirect()->route('bahan.showImportForm')->with('error', 'Terjadi kesalahan saat proses import: ' . $e->getMessage());
+    }
 
         return redirect()->route('bahan.index')->with('success', 'Data bahan berhasil diimpor.');
     }
