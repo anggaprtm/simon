@@ -10,26 +10,35 @@
         <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    {{-- ======================= --}}
-                    {{--      FORM FILTER        --}}
-                    {{-- ======================= --}}
+       
                     <form method="GET" action="{{ route('laporan.transaksi') }}" class="mb-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                            {{-- Filter Program Studi (hanya untuk superadmin/fakultas) --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                            {{-- Filter Program Studi --}}
                             @if(in_array(Auth::user()->role, ['superadmin', 'fakultas']))
                                 <div>
-                                    <label for="prodi_id" class="block text-sm font-medium text-gray-700">Unit</label>
-                                    <select name="prodi_id" id="prodi_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                        <option value="">-- Semua Unit --</option>
+                                    <label for="prodi_id" class="block text-sm font-medium text-gray-700">Program Studi</label>
+                                    <select name="prodi_id" id="prodi_id" class="mt-1 block w-full ...">
+                                        <option value="">-- Semua Prodi --</option>
                                         @foreach($programStudis as $prodi)
-                                            <option value="{{ $prodi->id }}" {{ request('prodi_id') == $prodi->id ? 'selected' : '' }}>
+                                            <option value="{{ $prodi->id }}" {{ $selectedProdiId == $prodi->id ? 'selected' : '' }}>
                                                 {{ $prodi->nama_program_studi }}
                                             </option>
                                         @endforeach
                                     </select>
                                 </div>
                             @endif
-
+                            
+                             <div>
+                                <label for="tahun" class="block text-sm font-medium text-gray-700">Tahun Periode</label>
+                                <select name="tahun" id="tahun" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="">-- Semua Tahun --</option>
+                                    @foreach($availableYears as $year)
+                                        <option value="{{ $year }}" {{ $selectedTahun == $year ? 'selected' : '' }}>
+                                            {{ $year }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                             {{-- Filter Tanggal Mulai --}}
                             <div>
                                 <label for="tanggal_mulai" class="block text-sm font-medium text-gray-700">Dari Tanggal</label>

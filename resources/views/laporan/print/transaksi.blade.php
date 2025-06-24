@@ -8,6 +8,18 @@
 
 {{-- Mendefinisikan konten laporan --}}
 @section('content')
+
+    <div class="mb-4 text-sm text-gray-600">
+        @if($selectedProdiId && $programStudis->find($selectedProdiId))
+            <p><strong>Program Studi:</strong> {{ $programStudis->find($selectedProdiId)->nama_program_studi }}</p>
+        @endif
+        @if($selectedTahun)
+            <p><strong>Tahun Periode:</strong> {{ $selectedTahun }}</p>
+        @elseif($tanggalMulai && $tanggalSelesai)
+            <p><strong>Periode Tanggal:</strong> {{ \Carbon\Carbon::parse($tanggalMulai)->isoFormat('D MMM Y') }} - {{ \Carbon\Carbon::parse($tanggalSelesai)->isoFormat('D MMM Y') }}</p>
+        @endif
+    </div>
+    
     <table class="w-full text-sm text-left rtl:text-right text-gray-500">
         <thead class="text-xs text-gray-700 uppercase bg-gray-100">
             <tr>

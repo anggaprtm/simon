@@ -91,4 +91,15 @@ class Bahan extends Model
 
         return $jumlah . ' ' . ($this->satuanRel->nama_satuan ?? '');
     }
+
+    public function periodeStoks()
+    {
+        return $this->hasMany(PeriodeStok::class, 'id_bahan');
+    }
+
+    // Relasi untuk mendapatkan periode stok yang sedang aktif
+    public function periodeAktif()
+    {
+        return $this->hasOne(PeriodeStok::class, 'id_bahan')->where('status', 'aktif');
+    }
 }

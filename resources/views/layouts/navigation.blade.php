@@ -33,6 +33,9 @@
                         <x-nav-link :href="route('satuan.index')" :active="request()->routeIs('satuan.*')"> {{-- <-- TAMBAHKAN INI --}}
                             {{ __('Master Satuan') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('periode.index')" :active="request()->routeIs('periode.*')">
+                            {{ __('Manajemen Periode') }}
+                        </x-nav-link>
                     </div>
                     @endif
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">

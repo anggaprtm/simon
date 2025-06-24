@@ -67,6 +67,13 @@ class BahanImport implements ToCollection, WithHeadingRow, WithValidation
                         'tanggal_kedaluwarsa' => $row['tanggal_kedaluwarsa'],
                         'id_program_studi'  => $this->user->id_program_studi,
                     ]);
+                    
+                    $bahan->periodeStoks()->create([
+                        'tahun_periode' => date('Y'), // Tahun saat ini
+                        'stok_awal' => $stokAwal,
+                        'status' => 'aktif',
+                    ]);
+                
 
                     if ($stokAwal > 0) {
                         Transaksi::create([

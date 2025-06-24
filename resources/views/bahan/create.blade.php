@@ -10,6 +10,12 @@
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
+                    @if (session('error'))
+                        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded" role="alert">
+                            <strong class="font-bold">Terjadi Kesalahan!</strong>
+                            <span class="block sm:inline">{{ session('error') }}</span>
+                        </div>
+                    @endif
                     <form action="{{ route('bahan.store') }}" method="POST">
                         @include('bahan._form')
                         <div class="flex items-center justify-end mt-6">

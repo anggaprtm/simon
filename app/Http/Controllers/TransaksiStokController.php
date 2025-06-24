@@ -32,6 +32,29 @@ class TransaksiStokController extends Controller
     {
         Gate::authorize('update-bahan', $bahan);
 
+        // 1. Cek status periode aktif untuk bahan ini
+        // Kita menggunakan relasi hasOne 'periodeAktif' yang sudah kita buat di Model Bahan
+        $periodeAktif = $bahan->periodeAktif; 
+
+        // Cek jika tidak ada periode aktif (misalnya belum dibuat) atau statusnya sudah 'ditutup'
+        // Relasi 'periodeAktif' sudah otomatis memfilter yang statusnya 'aktif',
+        // jadi jika hasilnya null, berarti tidak ada periode yang aktif.
+        if (!$periodeAktif) {
+            return redirect()->back()
+                ->with('error', 'Tidak dapat membuat transaksi. Tidak ada periode aktif untuk bahan ini atau periode sudah ditutup.')
+                ->withInput();
+        }
+
+        // 2. Cek apakah tanggal transaksi yang diinput sesuai dengan tahun periode aktif
+        // Ambil tahun dari tanggal yang diinput pengguna
+        $tahunTransaksi = date('Y', strtotime($request->tanggal_transaksi));
+
+        if ($tahunTransaksi != $periodeAktif->tahun_periode) {
+            return redirect()->back()
+                ->with('error', 'Tanggal transaksi harus berada dalam periode tahun yang aktif saat ini (Tahun ' . $periodeAktif->tahun_periode . ').')
+                ->withInput();
+        }
+
         $request->validate([
             'jumlah' => 'required|integer|min:1',
             'tanggal_transaksi' => 'required|date',
@@ -72,6 +95,29 @@ class TransaksiStokController extends Controller
     public function storeKeluar(Request $request, Bahan $bahan)
     {
         Gate::authorize('update-bahan', $bahan);
+
+        // 1. Cek status periode aktif untuk bahan ini
+        // Kita menggunakan relasi hasOne 'periodeAktif' yang sudah kita buat di Model Bahan
+        $periodeAktif = $bahan->periodeAktif; 
+
+        // Cek jika tidak ada periode aktif (misalnya belum dibuat) atau statusnya sudah 'ditutup'
+        // Relasi 'periodeAktif' sudah otomatis memfilter yang statusnya 'aktif',
+        // jadi jika hasilnya null, berarti tidak ada periode yang aktif.
+        if (!$periodeAktif) {
+            return redirect()->back()
+                ->with('error', 'Tidak dapat membuat transaksi. Tidak ada periode aktif untuk bahan ini atau periode sudah ditutup.')
+                ->withInput();
+        }
+
+        // 2. Cek apakah tanggal transaksi yang diinput sesuai dengan tahun periode aktif
+        // Ambil tahun dari tanggal yang diinput pengguna
+        $tahunTransaksi = date('Y', strtotime($request->tanggal_transaksi));
+
+        if ($tahunTransaksi != $periodeAktif->tahun_periode) {
+            return redirect()->back()
+                ->with('error', 'Tanggal transaksi harus berada dalam periode tahun yang aktif saat ini (Tahun ' . $periodeAktif->tahun_periode . ').')
+                ->withInput();
+        }
         
         // Validasi agar jumlah keluar tidak melebihi stok yang ada
         $request->validate([
@@ -135,6 +181,29 @@ class TransaksiStokController extends Controller
     public function storePenyesuaian(Request $request, Bahan $bahan)
     {
         Gate::authorize('update-bahan', $bahan);
+
+        // 1. Cek status periode aktif untuk bahan ini
+        // Kita menggunakan relasi hasOne 'periodeAktif' yang sudah kita buat di Model Bahan
+        $periodeAktif = $bahan->periodeAktif; 
+
+        // Cek jika tidak ada periode aktif (misalnya belum dibuat) atau statusnya sudah 'ditutup'
+        // Relasi 'periodeAktif' sudah otomatis memfilter yang statusnya 'aktif',
+        // jadi jika hasilnya null, berarti tidak ada periode yang aktif.
+        if (!$periodeAktif) {
+            return redirect()->back()
+                ->with('error', 'Tidak dapat membuat transaksi. Tidak ada periode aktif untuk bahan ini atau periode sudah ditutup.')
+                ->withInput();
+        }
+
+        // 2. Cek apakah tanggal transaksi yang diinput sesuai dengan tahun periode aktif
+        // Ambil tahun dari tanggal yang diinput pengguna
+        $tahunTransaksi = date('Y', strtotime($request->tanggal_transaksi));
+
+        if ($tahunTransaksi != $periodeAktif->tahun_periode) {
+            return redirect()->back()
+                ->with('error', 'Tanggal transaksi harus berada dalam periode tahun yang aktif saat ini (Tahun ' . $periodeAktif->tahun_periode . ').')
+                ->withInput();
+        }
 
         $request->validate([
             'stok_fisik' => 'required|integer|min:0',

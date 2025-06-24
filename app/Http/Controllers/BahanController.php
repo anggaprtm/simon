@@ -102,19 +102,27 @@ class BahanController extends Controller
         try {
             DB::beginTransaction();
 
+            $stokAwal = $request->jumlah_stock ?? 0;
+
             $bahan = Bahan::create([
                 'kode_bahan' => $request->kode_bahan,
                 'nama_bahan' => $request->nama_bahan,
                 'merk' => $request->merk,
-                'id_program_studi' => $user->id_program_studi, // Otomatis
+                'jenis_bahan' => $request->jenis_bahan,
+                'id_program_studi' => $user->id_program_studi, 
                 'id_gudang' => $request->id_gudang,
                 'id_satuan' => $request->id_satuan,
                 'minimum_stock' => $request->minimum_stock,
-                'jumlah_stock' => $request->jumlah_stock ?? 0, // Set stok awal
+                'jumlah_stock' => $stokAwal, 
                 'tanggal_kedaluwarsa' => $request->tanggal_kedaluwarsa,
             ]);
 
-            // Jika ada stok awal, catat sebagai transaksi pertama
+            $bahan->periodeStoks()->create([
+                'tahun_periode' => date('Y'), 
+                'status' => 'aktif', // 
+            ]);
+
+
             if ($bahan->jumlah_stock > 0) {
                 Transaksi::create([
                     'id_bahan' => $bahan->id,

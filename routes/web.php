@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\SatuanController;
+use App\Http\Controllers\PeriodeController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -58,6 +59,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:superadmin')->group(function () {
         Route::resource('program-studi', ProgramStudiController::class);
         Route::resource('satuan', SatuanController::class);
+        Route::get('/periode', [PeriodeController::class, 'index'])->name('periode.index');
+        Route::post('/periode/tutup-tahun', [PeriodeController::class, 'tutupTahun'])->name('periode.tutup');
     });
 });
 
