@@ -15,7 +15,7 @@
                         <ol class="list-decimal list-inside mt-2 text-sm">
                             <li>Unduh template Excel yang sudah disediakan.</li>
                             <li>Isi data bahan sesuai dengan kolom pada template.</li>
-                            <li>Kolom `kode_bahan`, `nama_bahan`, `nama_gudang`, dan `satuan` wajib diisi.</li>
+                            <li>Kolom `kode_bahan`, `nama_bahan`, `nama_gudang`, dan `nama_satuan` wajib diisi.</li>
                             <li>Pastikan `nama_gudang` yang Anda masukkan sudah terdaftar di sistem.</li>
                             <li>Simpan file Anda dalam format .xlsx atau .xls.</li>
                             <li>Unggah file yang sudah diisi melalui form di bawah ini.</li>

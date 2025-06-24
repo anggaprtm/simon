@@ -16,7 +16,7 @@
                         <div class="flex items-center justify-end mt-6">
                             <a href="{{ route('bahan.index') }}" class="text-gray-600 hover:text-gray-900 mr-4">Batal</a>
                             <x-primary-button>
-                                {{ __('Update') }}
+                                {{ __('Simpan') }}
                             </x-primary-button>
                         </div>
                     </form>

@@ -124,9 +124,9 @@
                                             <input type="checkbox" name="selected_bahan[]" class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" value="{{ $bahan->id }}">
                                         </td>
                                         <td class="px-6 py-4">{{ $bahan->kode_bahan }}</td>
-                                        <td class="px-6 py-4">{{ $bahan->nama_bahan }} ({{ $bahan->merk }})</td>
+                                        <td class="px-6 py-4">{!! $bahan->nama_bahan_html !!} ({{ $bahan->merk }})</td>
                                         <td class="px-6 py-4">{{ $bahan->jenis_bahan ?? '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap font-bold">{{ $bahan->jumlah_stock }} {{ $bahan->satuanRel->nama_satuan ?? '-' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap font-bold">{{ $bahan->formatted_stock }}</td>
                                         <td class="px-6 py-4">{{ $bahan->gudang->nama_gudang }}</td>
                                         <td class="px-6 py-4">{{ $bahan->programStudi->kode_program_studi }}</td>
                                         <td class="px-6 py-4">{{ $bahan->tanggal_kedaluwarsa ? \Carbon\Carbon::parse($bahan->tanggal_kedaluwarsa)->format('d M Y') : '-' }}</td>

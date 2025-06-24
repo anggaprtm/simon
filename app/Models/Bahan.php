@@ -62,4 +62,33 @@ class Bahan extends Model
     {
         return $this->belongsTo(Satuan::class, 'id_satuan');
     }
+
+    public function getNamaBahanHtmlAttribute(): string
+    {
+        // Ambil nama bahan asli
+        $namaBahanAsli = $this->attributes['nama_bahan'] ?? '';
+
+        // Gunakan regular expression untuk menemukan semua angka (satu atau lebih digit)
+        // dan membungkusnya dengan tag <sub></sub>
+        $namaBahanFormatted = preg_replace('/(?<=[A-Za-z\)])(\d+)/', '<sub>$1</sub>', $namaBahanAsli);
+
+        return $namaBahanFormatted;
+    }
+
+    public function getFormattedStockAttribute(): string
+    {
+        $jumlah = $this->attributes['jumlah_stock'] ?? 0;
+        // Ambil nama satuan dari relasi
+        $namaSatuan = strtolower($this->satuanRel->nama_satuan ?? ''); 
+
+        if ($namaSatuan === 'ml' && $jumlah >= 1000) {
+            $jumlahInLiter = $jumlah / 1000;
+            return number_format($jumlahInLiter, 1, ',', '.') . ' L';
+        } elseif ($namaSatuan === 'gr' && $jumlah >= 1000) {
+            $jumlahInKg = $jumlah / 1000;
+            return number_format($jumlahInKg, 1, ',', '.') . ' Kg';
+        }
+
+        return $jumlah . ' ' . ($this->satuanRel->nama_satuan ?? '');
+    }
 }

@@ -149,7 +149,7 @@ class BahanController extends Controller
 
         $satuans = Satuan::orderBy('nama_satuan')->get();
 
-        return view('bahan.edit', compact('bahan', 'gudangs'));
+        return view('bahan.edit', compact('bahan', 'gudangs', 'satuans'));
     }
 
     public function update(Request $request, Bahan $bahan)
