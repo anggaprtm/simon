@@ -195,15 +195,6 @@ class TransaksiStokController extends Controller
                 ->withInput();
         }
 
-        // 2. Cek apakah tanggal transaksi yang diinput sesuai dengan tahun periode aktif
-        // Ambil tahun dari tanggal yang diinput pengguna
-        $tahunTransaksi = date('Y', strtotime($request->tanggal_transaksi));
-
-        if ($tahunTransaksi != $periodeAktif->tahun_periode) {
-            return redirect()->back()
-                ->with('error', 'Tanggal transaksi harus berada dalam periode tahun yang aktif saat ini (Tahun ' . $periodeAktif->tahun_periode . ').')
-                ->withInput();
-        }
 
         $request->validate([
             'stok_fisik' => 'required|integer|min:0',
@@ -225,7 +216,7 @@ class TransaksiStokController extends Controller
                 if ($selisih == 0) {
                     // Kita bisa redirect dengan pesan 'info' (opsional)
                     // Untuk saat ini, kita anggap tidak terjadi apa-apa
-                    return;
+                    throw new \Exception('Tidak ada perubahan stok. Jumlah fisik sama dengan jumlah sistem.');
                 }
 
                 $jenis_transaksi = $selisih > 0 ? 'penyesuaian_masuk' : 'penyesuaian_keluar';
@@ -247,6 +238,9 @@ class TransaksiStokController extends Controller
             });
 
         } catch (\Exception $e) {
+            if ($e->getMessage() === 'Tidak ada perubahan stok. Jumlah fisik sama dengan jumlah sistem.') {
+            return redirect()->back()->with('info', $e->getMessage()); // Gunakan 'info' atau 'success'
+            }
             return redirect()->back()->with('error', 'Gagal menyimpan penyesuaian: ' . $e->getMessage())->withInput();
         }
         

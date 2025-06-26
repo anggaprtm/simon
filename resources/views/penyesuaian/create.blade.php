@@ -8,6 +8,12 @@
     <div class="py-12">
         <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    @if (session('error'))
+                        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded" role="alert">
+                            <strong class="font-bold">Terjadi Kesalahan!</strong>
+                            <span class="block sm:inline">{{ session('error') }}</span>
+                        </div>
+                    @endif
                 <div class="p-6 text-gray-900">
                     <div class="mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-r-lg">
                         <h3 class="font-bold text-lg">{{ $bahan->nama_bahan }} ({{ $bahan->merk }})</h3>

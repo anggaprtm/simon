@@ -23,7 +23,35 @@
     </div>
 
     @yield('content')
-    
+
+    {{-- ====================================== --}}
+    {{-- ==>       BLOK TANDA TANGAN        <== --}}
+    {{-- ====================================== --}}
+    <div class="signature-section mt-8 pt-4 text-sm">
+        <div class="flex justify-between">
+            <div class="w-1/3 text-center">
+                <p class="mb-20">Operator Persediaan</p>
+                <p class="font-bold underline">Yuliana Ariandini Ayuningtiyas, S.IIP</p>
+                <p>NIK. 198907282022113201</p>
+            </div>
+
+            <div class="w-1/3 text-center">
+                <p class="mb-20">Laboran Rekayasa Nanoteknologi</p>
+                <p class="font-bold underline">(_________________________)</p>
+                <p>NIK. ...............................</p>
+            </div>
+        </div>
+
+        <div class="flex justify-center mt-16">
+            <div class="w-1/3 text-center">
+                <p>Mengetahui,</p>
+                <p class="mb-20">Kepala Sub Bagian Sarpras</p>
+                <p class="font-bold underline">Boedi Rahardjo, S.Sos</p>
+                <p>NIK. 196907301990031002 </p>
+            </div>
+        </div>
+    </div>
+
     <script>
         window.onload = function() {
             window.print();

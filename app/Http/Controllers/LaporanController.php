@@ -120,7 +120,7 @@ class LaporanController extends Controller
 
         // Jika ada permintaan cetak, gunakan layout print
         if ($request->has('print')) {
-            return view('laporan.print.transaksi', compact('transaksis', 'programStudis'));
+            return view('laporan.print.transaksi', compact('transaksis', 'programStudis', 'selectedProdiId', 'selectedTahun', 'tanggalMulai', 'tanggalSelesai'));
         }
 
         return view('laporan.transaksi', compact('transaksis', 'programStudis', 'availableYears', 'selectedTahun', 'selectedProdiId', 'tanggalMulai', 'tanggalSelesai'));
