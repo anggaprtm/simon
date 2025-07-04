@@ -1,66 +1,108 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📦 SiMon: Sistem Informasi Monitoring & Opname
+SiMon adalah sebuah aplikasi web modern yang dirancang untuk merevolusi cara institusi pendidikan, khususnya fakultas dengan banyak program studi, mengelola inventaris bahan laboratorium. Ucapkan selamat tinggal pada pencatatan manual yang rentan kesalahan dan sambut era baru manajemen stok yang efisien, terpusat, dan akurat.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Dibangun dengan Laravel, SiMon menyediakan platform yang kuat dan aman untuk memonitor stok, mencatat setiap transaksi, dan melakukan proses tutup buku tahunan dengan mudah.
 
-## About Laravel
+## ✨ Fitur Utama
+SiMon dilengkapi dengan serangkaian fitur canggih yang dirancang untuk memenuhi kebutuhan kompleks manajemen laboratorium:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### 📦 Manajemen Inventaris Bahan
+- **CRUD Penuh:** Tambah, lihat, edit, dan hapus data master bahan laboratorium dengan detail lengkap.
+- **Atribut Lengkap:** Catat informasi penting seperti kode bahan, nama, merk, jenis bahan (cair, padat, dll.), satuan, hingga tanggal kedaluwarsa.
+- **Stok Minimum:** Atur batas stok minimum untuk setiap bahan dan dapatkan peringatan visual di dashboard jika stok menipis.
+- **Format Subscript Dinamis:** Nama bahan kimia seperti H₂O atau C₆H₁₂O₆ ditampilkan dengan benar secara otomatis.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 🔀 Manajemen Transaksi Stok
+- **Pencatatan Real-time:** Catat setiap aktivitas barang masuk, keluar, dan penyesuaian stok dengan mudah.
+- **Jejak Audit:** Setiap transaksi mencatat siapa yang melakukan, kapan, jumlah, serta stok sebelum dan sesudah, menciptakan jejak audit yang jelas.
+- **Riwayat Lengkap**: Lihat riwayat transaksi mendetail untuk setiap bahan.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 📅 Sistem Periodisasi Tahunan (Tutup Buku)
+- **Siklus Tahunan:** Aplikasi beroperasi dalam siklus periode tahunan yang aktif.
+- **Proses Tutup Tahun:** Fitur khusus untuk Superadmin yang memungkinkan penguncian transaksi di akhir tahun, mencatat stok akhir, dan secara otomatis membawanya menjadi stok awal untuk periode tahun berikutnya.
+- **Akurasi Historis:** Data dari periode yang sudah ditutup tetap tersimpan dan dapat diakses melalui laporan, memastikan data historis tidak berubah.
 
-## Learning Laravel
+### 🔐 Manajemen Pengguna Berbasis Peran
+- **Tiga Level Akses:** Sistem memiliki tiga peran utama dengan hak akses yang berbeda:
+  - **Superadmin:** Akses penuh ke seluruh sistem, termasuk manajemen data master (Program Studi, Satuan) dan proses Tutup Tahun.
+  - **Fakultas:** Dapat memonitor stok dan transaksi dari semua program studi, namun tidak dapat mengubah data operasional. Sempurna untuk pimpinan atau auditor.
+  - **Laboran:** Pengguna operasional utama. Hanya dapat mengelola bahan dan transaksi milik program studinya sendiri.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 📊 Laporan Dinamis & Cetak
+- **Laporan Stok & Transaksi:** Hasilkan laporan stok (real-time atau historis) dan laporan riwayat transaksi.
+- **Filter Canggih:** Saring laporan berdasarkan program studi dan rentang tanggal atau tahun periode.
+- **Versi Cetak Profesional:** Setiap laporan memiliki versi cetak yang bersih, lengkap dengan kop surat dan area tanda tangan dinamis untuk validasi resmi.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 🚀 Fitur Canggih Lainnya
+- **Import dari Excel:** Efisiensikan entri data dalam jumlah besar dengan fitur import bahan dari file Excel, lengkap dengan template dan validasi data yang kuat.
+- **Pencarian & Paginasi:** Temukan bahan dengan cepat melalui fitur pencarian dan kelola data dalam jumlah besar dengan mudah berkat paginasi.
+- **Seleksi & Hapus Massal:** Pilih beberapa baris data bahan atau gudang sekaligus untuk dihapus, mempercepat proses manajemen.
+- **UI Modern & Responsif:** Dibangun dengan Tailwind CSS, memberikan tampilan yang bersih, modern, dan nyaman digunakan di berbagai perangkat.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🛠️ Teknologi yang Digunakan
+- **Backend:** Laravel Framework, PHP
+- **Frontend:** Blade, Tailwind CSS, Alpine.js
+- **Database:** MySQL (dapat disesuaikan)
+- **Library Utama:** `Maatwebsite/Laravel-Excel` untuk fungsionalitas import.
 
-## Laravel Sponsors
+## 🚀 Instalasi & Setup
+Ikuti langkah-langkah berikut untuk menjalankan aplikasi ini di lingkungan lokal Anda:
+1. **Clone Repositori**
+```
+git clone https://github.com/username/simon-app.git
+cd simon-app
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+2. **Instal Dependensi**
+```
+composer install
+npm install
+```
 
-### Premium Partners
+3. **Konfigurasi Environment**
+- Salin file .env.example menjadi .env.
+```
+cp .env.example .env
+```
+- Generate kunci aplikasi.
+```
+php artisan key:generate
+```
+- Atur koneksi database Anda (DB_DATABASE, DB_USERNAME, DB_PASSWORD) di dalam file `.env`.
+- Atur locale aplikasi ke Bahasa Indonesia untuk format tanggal yang sesuai.
+```
+APP_LOCALE=id
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+4. **Jalankan Migrasi dan Seeder**
+- Perintah ini akan membuat semua tabel database dan mengisi data awal (seperti data program studi, satuan, dan user superadmin).
+```
+php artisan migrate:fresh --seed
+```
 
-## Contributing
+5. **Compile Aset Frontend**
+```
+npm run dev
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+6. **Jalankan Development Server**
+```
+php artisan serve
+```
+- Aplikasi sekarang dapat diakses di `http://localhost:8000.`
 
-## Code of Conduct
+## 👤 Struktur Role Pengguna
+- **Superadmin:**
+  - Login default: `superadmin@example.com`
+  - Password default: `password`
+  - Tugas: Mengelola data master (Prodi, Satuan), mengelola akun pengguna lain (fitur masa depan), dan melakukan proses Tutup Tahun.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- **Fakultas:**
+  - Login default: `fakultas@example.com`
+  - Password default: `password`
+  - Tugas: Memonitor semua data tanpa hak edit.
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- **Laboran:**
+  - Login default: `laboran.tif@example.com` (dan lainnya dari seeder)
+  - Password default: `password`
+  - Tugas: Melakukan semua pekerjaan operasional harian untuk prodinya masing-masing.

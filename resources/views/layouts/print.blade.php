@@ -36,16 +36,24 @@
             </div>
 
             <div class="w-1/3 text-center">
-                <p class="mb-20">Laboran Rekayasa Nanoteknologi</p>
-                <p class="font-bold underline">(_________________________)</p>
-                <p>NIK. ...............................</p>
+            @if(Auth::check() && Auth::user()->role === 'laboran' && Auth::user()->programStudi)
+                <p class="mb-20">Laboran {{ Auth::user()->programStudi->nama_program_studi }}</p>
+             @else
+                <p class="mb-20">Operator Bahan</p> 
+            @endif
+                <p class="font-bold underline">
+                    {{ Auth::check() ? Auth::user()->nama_lengkap : '_________________________' }}
+                </p>
+                <p>
+                    NIK. {{ Auth::check() && Auth::user()->nik ? Auth::user()->nik : '...............................' }}
+                </p>
             </div>
         </div>
 
         <div class="flex justify-center mt-16">
             <div class="w-1/3 text-center">
                 <p>Mengetahui,</p>
-                <p class="mb-20">Kepala Sub Bagian Sarpras</p>
+                <p class="mb-20">Kasubag Sarana dan Prasarana</p>
                 <p class="font-bold underline">Boedi Rahardjo, S.Sos</p>
                 <p>NIK. 196907301990031002 </p>
             </div>

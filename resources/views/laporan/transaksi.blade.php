@@ -84,7 +84,7 @@
                                                 {{ str_replace('_', ' ', $transaksi->jenis_transaksi) }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $transaksi->bahan->nama_bahan ?? 'N/A' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{!! $transaksi->bahan->nama_bahan_html !!}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $transaksi->bahan->programStudi->kode_program_studi ?? 'N/A' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $transaksi->jumlah }} {{ $transaksi->bahan->satuanRel->nama_satuan ?? '' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $transaksi->user->name ?? 'N/A' }}</td>

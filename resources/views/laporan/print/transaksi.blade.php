@@ -4,7 +4,7 @@
 @extends('layouts.print')
 
 {{-- Mengatur judul laporan --}}
-@section('title', 'Laporan Riwayat Transaksi')
+@section('title', 'Berita Acara Riwayat Transaksi')
 
 {{-- Mendefinisikan konten laporan --}}
 @section('content')
@@ -21,27 +21,31 @@
     </div>
     
     <table class="w-full text-sm text-left rtl:text-right text-gray-500">
-        <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-100" style="text-align: center;">
             <tr>
-                <th scope="col" class="px-4 py-3 border">Tanggal</th>
-                <th scope="col" class="px-4 py-3 border">Jenis</th>
-                <th scope="col" class="px-4 py-3 border">Nama Bahan</th>
-                <th scope="col" class="px-4 py-3 border">Unit/Prodi</th>
-                <th scope="col" class="px-4 py-3 border">Jumlah</th>
-                <th scope="col" class="px-4 py-3 border">Oleh</th>
-                <th scope="col" class="px-4 py-3 border">Keterangan</th>
+                <th class="border border-gray-300 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                <th class="border border-gray-300 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
+                <th class="border border-gray-300 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Bahan</th>
+                <th class="border border-gray-300 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prodi</th>
+                <th class="border border-gray-300 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+                <th class="border border-gray-300 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oleh</th>
+                <th class="border border-gray-300 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
             </tr>
         </thead>
         <tbody>
             @forelse ($transaksis as $transaksi)
                 <tr class="bg-white border-b">
-                    <td class="px-4 py-2 border whitespace-nowrap">{{ \Carbon\Carbon::parse($transaksi->tanggal_transaksi)->isoFormat('D/M/YY HH:mm') }}</td>
-                    <td class="px-4 py-2 border whitespace-nowrap">{{ ucwords(str_replace('_', ' ', $transaksi->jenis_transaksi)) }}</td>
-                    <td class="px-4 py-2 border">{{ $transaksi->bahan->nama_bahan ?? 'N/A' }}</td>
-                    <td class="px-4 py-2 border">{{ $transaksi->bahan->programStudi->kode_program_studi ?? 'N/A' }}</td>
-                    <td class="px-4 py-2 border whitespace-nowrap">{{ $transaksi->jumlah }} {{ $transaksi->bahan->satuanRel->nama_satuan ?? '' }}</td>
-                    <td class="px-4 py-2 border">{{ $transaksi->user->name ?? 'N/A' }}</td>
-                    <td class="px-4 py-2 border">{{ $transaksi->keterangan }}</td>
+                    <td class="border border-gray-300 px-6 py-4 whitespace-nowrap">{{ \Carbon\Carbon::parse($transaksi->tanggal_transaksi)->isoFormat('D MMM Y, HH:mm') }}</td>
+                    <td class="border border-gray-300 px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ str_contains($transaksi->jenis_transaksi, 'masuk') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                            {{ str_replace('_', ' ', $transaksi->jenis_transaksi) }}
+                        </span>
+                    </td>
+                    <td class="border border-gray-300 px-6 py-4 whitespace-nowrap">{!! $transaksi->bahan->nama_bahan_html !!}</td>
+                    <td class="border border-gray-300 px-6 py-4 whitespace-nowrap">{{ $transaksi->bahan->programStudi->kode_program_studi ?? 'N/A' }}</td>
+                    <td class="border border-gray-300 px-6 py-4 whitespace-nowrap">{{ $transaksi->jumlah }} {{ $transaksi->bahan->satuanRel->nama_satuan ?? '' }}</td>
+                    <td class="border border-gray-300 px-6 py-4 whitespace-nowrap">{{ $transaksi->user->name ?? 'N/A' }}</td>
+                    <td class="border border-gray-300 px-6 py-4">{{ $transaksi->keterangan }}</td>
                 </tr>
             @empty
                 <tr>
