@@ -99,13 +99,62 @@
                                     <th class="px-6 py-3 text-left">
                                         <input type="checkbox" id="select-all-checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Bahan</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stok</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <a href="{{ route('bahan.index', array_merge(request()->query(), ['sort_by' => 'kode_bahan', 'direction' => ($sortBy == 'kode_bahan' && $direction == 'asc') ? 'desc' : 'asc'])) }}" class="flex items-center">
+                                            Kode
+                                            @if ($sortBy == 'kode_bahan')
+                                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    @if ($direction == 'asc')
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                                    @else
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                    @endif
+                                                </svg>
+                                            @endif
+                                        </a>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <a href="{{ route('bahan.index', array_merge(request()->query(), ['sort_by' => 'nama_bahan', 'direction' => ($sortBy == 'nama_bahan' && $direction == 'asc') ? 'desc' : 'asc'])) }}" class="flex items-center">
+                                            Nama Bahan
+                                            @if ($sortBy == 'nama_bahan')
+                                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    @if ($direction == 'asc')<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>@else<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>@endif
+                                                </svg>
+                                            @endif
+                                        </a>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <a href="{{ route('bahan.index', array_merge(request()->query(), ['sort_by' => 'jenis_bahan', 'direction' => ($sortBy == 'jenis_bahan' && $direction == 'asc') ? 'desc' : 'asc'])) }}" class="flex items-center">
+                                            Jenis
+                                            @if ($sortBy == 'jenis_bahan')
+                                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    @if ($direction == 'asc')<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>@else<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>@endif
+                                                </svg>
+                                            @endif
+                                        </a>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <a href="{{ route('bahan.index', array_merge(request()->query(), ['sort_by' => 'jumlah_stock', 'direction' => ($sortBy == 'jumlah_stock' && $direction == 'asc') ? 'desc' : 'asc'])) }}" class="flex items-center">
+                                            Stok
+                                            @if ($sortBy == 'jumlah_stock')
+                                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    @if ($direction == 'asc')<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>@else<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>@endif
+                                                </svg>
+                                            @endif
+                                        </a>
+                                    </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gudang</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit/Prodi</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kedaluwarsa</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <a href="{{ route('bahan.index', array_merge(request()->query(), ['sort_by' => 'tanggal_kedaluwarsa', 'direction' => ($sortBy == 'tanggal_kedaluwarsa' && $direction == 'asc') ? 'desc' : 'asc'])) }}" class="flex items-center">
+                                            Kedaluwarsa
+                                            @if ($sortBy == 'tanggal_kedaluwarsa')
+                                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    @if ($direction == 'asc')<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>@else<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>@endif
+                                                </svg>
+                                            @endif
+                                        </a>
+                                    </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                 </tr>
                             </thead>

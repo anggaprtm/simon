@@ -22,9 +22,23 @@ class BahanController extends Controller
         $this->authorize('view-any-bahan');
 
         $user = Auth::user();
-        $search = $request->input('search'); // Ambil input pencarian
+        // 1. Ambil parameter dari URL dengan nilai default
+        $sortBy = $request->input('sort_by', 'kode_bahan'); // Default sort by kode_bahan
+        $direction = $request->input('direction', 'asc'); // Default direction ascending
+
+        // 2. Validasi untuk keamanan: hanya izinkan kolom tertentu yang bisa di-sort
+        $allowedSorts = ['kode_bahan', 'nama_bahan', 'jenis_bahan', 'jumlah_stock', 'tanggal_kedaluwarsa'];
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = 'kode_bahan'; // Jika input tidak valid, kembalikan ke default
+        }
+        if (!in_array($direction, ['asc', 'desc'])) {
+            $direction = 'asc'; // Jika input tidak valid, kembalikan ke default
+        }
+
+        $search = $request->input('search');
         $selectedProdiId = $request->input('prodi_id');
-        $query = Bahan::with(['programStudi', 'gudang']);
+
+        $query = Bahan::with(['programStudi', 'gudang', 'satuanRel']);
 
         // Filter untuk Superadmin & Fakultas
         $programStudis = [];
@@ -38,21 +52,19 @@ class BahanController extends Controller
             $query->where('id_program_studi', $user->id_program_studi);
         }
 
-        // Terapkan kondisi pencarian jika ada input search
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('nama_bahan', 'like', '%' . $search . '%')
-                  ->orWhere('kode_bahan', 'like', '%' . $search . '%')
-                  ->orWhere('merk', 'like', '%' . $search . '%')
-                  ->orWhere('jenis_bahan', 'like', '%' . $search . '%');
-            });
+        // 3. Terapkan logika sorting
+        if ($sortBy === 'kode_bahan') {
+            // Gunakan pengurutan "natural" khusus untuk kode_bahan
+            $query->orderByRaw("SUBSTRING_INDEX(kode_bahan, '-', 1) " . $direction)
+                ->orderByRaw("CAST(SUBSTRING_INDEX(kode_bahan, '-', -1) AS UNSIGNED) " . $direction);
+        } else {
+            // Gunakan pengurutan standar untuk kolom lainnya
+            $query->orderBy($sortBy, $direction);
         }
 
-        $bahans = $query->orderByRaw("SUBSTRING_INDEX(kode_bahan, '-', 1) ASC")
-                  ->orderByRaw("CAST(SUBSTRING_INDEX(kode_bahan, '-', -1) AS UNSIGNED) ASC")
-                  ->paginate(10);
+        $bahans = $query->paginate(25);
                   
-        return view('bahan.index', compact('bahans', 'programStudis', 'selectedProdiId', 'search'));
+        return view('bahan.index', compact('bahans', 'programStudis', 'search', 'selectedProdiId', 'sortBy', 'direction'));
     }
 
     public function create()
