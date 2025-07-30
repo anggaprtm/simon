@@ -1,50 +1,114 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
+	<title>Login &mdash; {{ config('app.name') }}</title>
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="{{ asset('assets/bootstrap/css/bootstrap.min.css') }}">
+	<link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.css') }}">
+	<link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png" />
+    
+</head>
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Alamat Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+<body>
+	<div id="app">
+		<section class="section">
+			<div class="d-flex flex-wrap align-items-stretch">
+				<!-- Form Login -->
+				<div class="col-lg-4 col-md-6 col-12 order-lg-1 min-vh-100 order-2 bg-white">
+					<div class="p-4 m-3">
+						<!-- Logo -->
+						<div class="text-center mb-4">
+							<a href="/">
+								<img src="{{ asset('images/logo-app.png') }}" alt="Logo FTMM" style="height: 85px;">
+							</a>
+						</div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+						<!-- Session Status -->
+						@if (session('status'))
+							<div class="alert alert-success">{{ session('status') }}</div>
+						@endif
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
+						<!-- Form -->
+						<form method="POST" action="{{ route('login') }}" class="needs-validation" novalidate="">
+							@csrf
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+							<!-- Email -->
+							<div class="form-group">
+								<label for="email">Email</label>
+								<input id="email" type="email"
+									class="form-control @error('email') is-invalid @enderror"
+									name="email" value="{{ old('email') }}" required autofocus tabindex="1">
+								@error('email')
+									<span class="invalid-feedback" role="alert">
+										<strong>{{ $message }}</strong>
+									</span>
+								@enderror
+							</div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Ingat saya') }}</span>
-            </label>
-        </div>
+							<!-- Password -->
+							<div class="form-group">
+								<label for="password">Password</label>
+								<input id="password" type="password"
+									class="form-control @error('password') is-invalid @enderror"
+									name="password" required tabindex="2">
+								@error('password')
+									<span class="invalid-feedback" role="alert">
+										<strong>{{ $message }}</strong>
+									</span>
+								@enderror
+							</div>
 
-        <div class="flex items-center justify-end mt-4 space-x-2">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('register') }}">
-                    {{ __('Belum punya akun?') }}
-                </a>
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Lupa password?') }}
-                </a>
-            @endif
+							<!-- Tombol Login -->
+							<div class="form-group text-right">
+								<button type="submit" class="btn btn-primary btn-lg btn-icon icon-right" tabindex="3">
+									Login
+								</button>
+							</div>
+						</form>
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+						<!-- Link Tambahan -->
+						<div class="mt-3 text-center">
+							@if (Route::has('register'))
+								<a href="{{ route('register') }}">Belum punya akun?</a>
+							@endif
+							@if (Route::has('password.request'))
+								<br>
+								<a href="{{ route('password.request') }}">Lupa password?</a>
+							@endif
+						</div>
+					</div>
+				</div>
+
+				<!-- Background Kanan -->
+				<div class="col-lg-8 col-12 order-lg-2 order-1 min-vh-100 background-walk-y position-relative overlay-gradient-bottom"
+					style="background-image: url('{{ asset('assets/img/unsplash/login-bgs.jpg') }}');">
+					<div class="absolute-bottom-left index-2">
+						<div class="text-light p-5 pb-2">
+							<div class="mb-5 pb-3">
+								<h1 class="mb-2 display-4 font-weight-bold" id="greetings"></h1>
+								<h5 class="font-weight-normal text-muted-transparent">FTMM, Gedung Nano</h5>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	</div>
+
+	<!-- JS: Hanya yang perlu -->
+	<script src="{{ asset('assets/js/jquery-3.5.1.min.js') }}"></script>
+	<script src="{{ asset('assets/bootstrap/js/bootstrap.min.js') }}"></script>
+
+	<!-- Greeting Script -->
+	@include('layouts.partials.greetings')
+	<script>
+		$(document).ready(function() {
+			$("#greetings").html(greetings());
+		});
+	</script>
+</body>
+</html>
