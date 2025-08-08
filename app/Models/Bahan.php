@@ -16,6 +16,7 @@ class Bahan extends Model
         'nama_bahan',
         'merk',
         'jenis_bahan',
+        'format_kimia',
         'id_program_studi',
         'id_gudang',
         'id_satuan',
@@ -32,6 +33,7 @@ class Bahan extends Model
         'tanggal_kedaluwarsa' => 'date',
         'jumlah_stock' => 'integer',
         'minimum_stock' => 'integer',
+        'format_kimia' => 'boolean',
     ];
 
     /**
@@ -65,14 +67,12 @@ class Bahan extends Model
 
     public function getNamaBahanHtmlAttribute(): string
     {
-        // Ambil nama bahan asli
         $namaBahanAsli = $this->attributes['nama_bahan'] ?? '';
+        if ($this->format_kimia) {
+            return preg_replace('/(?<=[A-Za-z\)])(\d+)/', '<sub>$1</sub>', $namaBahanAsli);
+        }
 
-        // Gunakan regular expression untuk menemukan semua angka (satu atau lebih digit)
-        // dan membungkusnya dengan tag <sub></sub>
-        $namaBahanFormatted = preg_replace('/(?<=[A-Za-z\)])(\d+)/', '<sub>$1</sub>', $namaBahanAsli);
-
-        return $namaBahanFormatted;
+        return $namaBahanAsli;
     }
 
     public function getFormattedStockAttribute(): string

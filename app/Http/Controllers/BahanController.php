@@ -130,6 +130,7 @@ class BahanController extends Controller
                 'nama_bahan' => $request->nama_bahan,
                 'merk' => $request->merk,
                 'jenis_bahan' => $request->jenis_bahan,
+                'format_kimia' => $request->has('format_kimia'),
                 'id_program_studi' => $user->id_program_studi, 
                 'id_gudang' => $request->id_gudang,
                 'id_satuan' => $request->id_satuan,
@@ -207,6 +208,7 @@ class BahanController extends Controller
         ]);
         
         $dataToUpdate = $request->except(['jumlah_stock', '_token', '_method']);
+        $dataToUpdate['format_kimia'] = $request->has('format_kimia');
         $dataToUpdate['id_satuan'] = $request->id_satuan; // Pastikan id_satuan diupdate
 
         $bahan->update($dataToUpdate);

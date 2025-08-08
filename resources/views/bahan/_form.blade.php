@@ -21,6 +21,16 @@
         <x-text-input id="jenis_bahan" class="block mt-1 w-full" type="text" name="jenis_bahan" :value="old('jenis_bahan', $bahan->jenis_bahan ?? '')" placeholder="Contoh: Cairan, Padatan, Komponen"/>
         <x-input-error :messages="$errors->get('jenis_bahan')" class="mt-2" />
     </div>
+    <div class="md:col-span-2 flex items-center space-x-2 pt-4">
+        <input type="checkbox" id="format_kimia" name="format_kimia" value="1" 
+            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+            {{-- Logika untuk menangani old input dan nilai saat edit --}}
+            {{ old('format_kimia', $bahan->format_kimia ?? false) ? 'checked' : '' }}
+        >
+        <label for="format_kimia" class="text-sm font-medium text-gray-700">
+            Terapkan format penulisan kimia (subscript) pada nama bahan ini?
+        </label>
+    </div>
     <div>
         <x-input-label for="id_gudang" :value="__('Lokasi Gudang')" />
         <select id="id_gudang" name="id_gudang" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm" required>
