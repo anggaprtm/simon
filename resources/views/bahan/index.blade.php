@@ -28,6 +28,8 @@
                     @endcan
 
                     <form method="GET" action="{{ route('bahan.index') }}" class="mb-6">
+                        <input type="hidden" name="sort_by" value="{{ $sortBy }}">
+                        <input type="hidden" name="direction" value="{{ $direction }}">
                         @if(in_array(Auth::user()->role, ['superadmin', 'fakultas']))
                             {{-- Layout untuk Superadmin/Fakultas dengan filter prodi & search --}}
                             <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">

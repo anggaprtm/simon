@@ -52,6 +52,15 @@ class BahanController extends Controller
             $query->where('id_program_studi', $user->id_program_studi);
         }
 
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_bahan', 'like', '%' . $search . '%')
+                ->orWhere('kode_bahan', 'like', '%' . $search . '%')
+                ->orWhere('merk', 'like', '%' . $search . '%')
+                ->orWhere('jenis_bahan', 'like', '%' . $search . '%');
+            });
+        }
+
         // 3. Terapkan logika sorting
         if ($sortBy === 'kode_bahan') {
             // Gunakan pengurutan "natural" khusus untuk kode_bahan
