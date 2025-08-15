@@ -11,6 +11,8 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\SatuanController;
 use App\Http\Controllers\PeriodeController;
+use App\Http\Controllers\MasterBarangController;
+use App\Http\Controllers\PengajuanPengadaanController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -30,6 +32,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('bahan/import', [BahanController::class, 'import'])->name('bahan.import');
     Route::post('bahan/bulk-delete', [BahanController::class, 'bulkDelete'])->name('bahan.bulkDelete');
     Route::resource('bahan', BahanController::class);
+    Route::get('pengajuan-pengadaan/{pengajuanPengadaan}/cetak-nota', [PengajuanPengadaanController::class, 'cetakNotaDinas'])->name('pengajuan-pengadaan.cetakNota');
+    Route::post('pengajuan-pengadaan/{pengajuanPengadaan}/setujui', [PengajuanPengadaanController::class, 'setujui'])->name('pengajuan-pengadaan.setujui');
+    Route::post('pengajuan-pengadaan/{pengajuanPengadaan}/tolak', [PengajuanPengadaanController::class, 'tolak'])->name('pengajuan-pengadaan.tolak');
+    Route::resource('pengajuan-pengadaan', PengajuanPengadaanController::class);
 
     Route::prefix('transaksi')->name('transaksi.')->group(function() {
         // Rute untuk menampilkan form
@@ -59,6 +65,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:superadmin')->group(function () {
         Route::resource('program-studi', ProgramStudiController::class);
         Route::resource('satuan', SatuanController::class);
+        Route::resource('master-barang', MasterBarangController::class);
         Route::get('/periode', [PeriodeController::class, 'index'])->name('periode.index');
         Route::post('/periode/tutup-tahun', [PeriodeController::class, 'tutupTahun'])->name('periode.tutup');
     });

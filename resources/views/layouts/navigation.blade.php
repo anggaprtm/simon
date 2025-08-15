@@ -30,6 +30,9 @@
                         <x-nav-link :href="route('program-studi.index')" :active="request()->routeIs('program-studi.*')">
                             Unit / Program Studi
                         </x-nav-link>
+                        <x-nav-link :href="route('master-barang.index')" :active="request()->routeIs('master-barang.*')"> {{-- <-- TAMBAHKAN INI --}}
+                            {{ __('Master Barang') }}
+                        </x-nav-link>
                         <x-nav-link :href="route('satuan.index')" :active="request()->routeIs('satuan.*')"> {{-- <-- TAMBAHKAN INI --}}
                             {{ __('Master Satuan') }}
                         </x-nav-link>
@@ -38,6 +41,11 @@
                         </x-nav-link>
                     </div>
                     @endif
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link :href="route('pengajuan-pengadaan.index')" :active="request()->routeIs('pengajuan-pengadaan.*')">
+                            {{ __('Pengajuan Pengadaan') }}
+                        </x-nav-link>
+                    </div>
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link :href="route('laporan.index')" :active="request()->routeIs('laporan.*')">
                             {{ __('Laporan') }}

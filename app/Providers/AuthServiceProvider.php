@@ -79,5 +79,9 @@ class AuthServiceProvider extends ServiceProvider
         // Laboran hanya bisa melihat bahan milik prodinya
         return $user->role === 'laboran' && $user->id_program_studi === $bahan->id_program_studi;
         });
+
+        Gate::define('manage-pengajuan', function ($user) {
+            return in_array($user->role, ['fakultas', 'superadmin']);
+        });
         }
 }
