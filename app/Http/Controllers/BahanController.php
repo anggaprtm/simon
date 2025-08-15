@@ -64,8 +64,8 @@ class BahanController extends Controller
         // 3. Terapkan logika sorting
         if ($sortBy === 'kode_bahan') {
             // Gunakan pengurutan "natural" khusus untuk kode_bahan
-            $query->orderByRaw("SUBSTRING_INDEX(kode_bahan, '-', 1) " . $direction)
-                ->orderByRaw("CAST(SUBSTRING_INDEX(kode_bahan, '-', -1) AS UNSIGNED) " . $direction);
+            $query->orderByRaw("REGEXP_REPLACE(kode_bahan, '[0-9]+$', '') " . $direction)
+                  ->orderByRaw("CAST(REGEXP_SUBSTR(kode_bahan, '[0-9]+$') AS UNSIGNED) " . $direction);
         } else {
             // Gunakan pengurutan standar untuk kolom lainnya
             $query->orderBy($sortBy, $direction);
