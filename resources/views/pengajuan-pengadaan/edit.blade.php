@@ -63,8 +63,8 @@
                                                 @endforeach
                                             </select>
                                         </td>
-                                        <td class="p-2"><input type="url" name="items[{{ $index }}][link_referensi]" placeholder="https://..." class="w-full border-gray-300 rounded-md shadow-sm"></td>
                                         <td class="p-2"><input type="number" name="items[{{ $index }}][harga_satuan]" value="{{ $item['harga_satuan'] ?? '' }}" class="w-40 border-gray-300 rounded-md shadow-sm" required min="0"></td>
+                                        <td class="p-2"><input type="url" name="items[{{ $index }}][link_referensi]" value="{{ $item['link_referensi'] ?? '' }}" class="w-full border-gray-300 rounded-md shadow-sm"></td>
                                         <td class="p-2">
                                             <button type="button" class="remove-item-btn text-red-500 hover:text-red-700">Hapus</button>
                                         </td>
