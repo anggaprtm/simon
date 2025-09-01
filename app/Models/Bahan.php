@@ -78,18 +78,32 @@ class Bahan extends Model
     public function getFormattedStockAttribute(): string
     {
         $jumlah = $this->attributes['jumlah_stock'] ?? 0;
-        // Ambil nama satuan dari relasi
-        $namaSatuan = strtolower($this->satuanRel->nama_satuan ?? ''); 
+        $namaSatuan = $this->satuanRel->nama_satuan ?? '';
+        $namaSatuanLower = strtolower($namaSatuan);
 
-        if ($namaSatuan === 'ml' && $jumlah >= 1000) {
-            $jumlahInLiter = $jumlah / 1000;
-            return number_format($jumlahInLiter, 1, ',', '.') . ' L';
-        } elseif ($namaSatuan === 'gr' && $jumlah >= 1000) {
-            $jumlahInKg = $jumlah / 1000;
-            return number_format($jumlahInKg, 1, ',', '.') . ' Kg';
+        // Logika konversi unit (contoh untuk ml -> L dan gr -> Kg)
+        if ($namaSatuanLower === 'ml' && $jumlah >= 1000) {
+            $jumlahKonversi = $jumlah / 1000;
+            // Format dengan 1-3 desimal, hapus .0 jika bilangan bulat
+            $formatted = number_format($jumlahKonversi, 3, ',', '.');
+            return rtrim(rtrim($formatted, '0'), ',') . ' L';
+        } elseif ($namaSatuanLower === 'gr' && $jumlah >= 1000) {
+            $jumlahKonversi = $jumlah / 1000;
+            $formatted = number_format($jumlahKonversi, 3, ',', '.');
+            return rtrim(rtrim($formatted, '0'), ',') . ' Kg';
         }
 
-        return $jumlah . ' ' . ($this->satuanRel->nama_satuan ?? '');
+        // Jika tidak ada konversi, format angka asli dan tambahkan satuan aslinya
+        $formattedJumlah = '';
+        if (fmod($jumlah, 1) == 0) {
+            // Jika bilangan bulat
+            $formattedJumlah = number_format($jumlah, 0, ',', '.');
+        } else {
+            // Jika desimal, hapus angka 0 di akhir
+            $formattedJumlah = rtrim(rtrim(number_format($jumlah, 3, ',', '.'), '0'), ',');
+        }
+
+        return trim($formattedJumlah . ' ' . $namaSatuan);
     }
 
     public function periodeStoks()
