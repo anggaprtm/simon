@@ -58,7 +58,7 @@
     </div>
     <div>
         <x-input-label for="minimum_stock" :value="__('Stok Minimum')" />
-        <x-text-input id="minimum_stock" class="block mt-1 w-full" type="number" name="minimum_stock" :value="old('minimum_stock', $bahan->minimum_stock ?? 0)" required />
+        <x-text-input id="minimum_stock" class="block mt-1 w-full" type="number" name="minimum_stock" :value="old('minimum_stock', $bahan->minimum_stock ?? 0)" step="any" required />
         <x-input-error :messages="$errors->get('minimum_stock')" class="mt-2" />
     </div>
     <div>
@@ -71,7 +71,7 @@
     @if(Route::is('bahan.create'))
     <div>
         <x-input-label for="jumlah_stock" :value="__('Jumlah Stok Awal (Opsional)')" />
-        <x-text-input id="jumlah_stock" class="block mt-1 w-full" type="number" name="jumlah_stock" :value="old('jumlah_stock', 0)" />
+        <x-text-input id="jumlah_stock" class="block mt-1 w-full" type="number" name="jumlah_stock" :value="old('jumlah_stock', 0)" step="any" />
         <x-input-error :messages="$errors->get('jumlah_stock')" class="mt-2" />
     </div>
     @endif

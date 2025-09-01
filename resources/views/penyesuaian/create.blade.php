@@ -26,7 +26,7 @@
                         <div>
                             <x-input-label for="stok_fisik" class="font-bold text-md" :value="__('Masukkan Jumlah Stok Fisik Aktual')" />
                             <p class="text-sm text-gray-600 mb-2">Masukkan jumlah hasil perhitungan manual Anda di gudang.</p>
-                            <x-text-input id="stok_fisik" class="block mt-1 w-full" type="number" name="stok_fisik" :value="old('stok_fisik', $bahan->jumlah_stock)" min="0" required autofocus />
+                            <x-text-input id="stok_fisik" class="block mt-1 w-full" type="number" name="stok_fisik" :value="old('stok_fisik', $bahan->jumlah_stock)" min="0" step="any" required autofocus />
                             <x-input-error :messages="$errors->get('stok_fisik')" class="mt-2" />
                         </div>
                         

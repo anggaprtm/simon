@@ -31,8 +31,8 @@ class Bahan extends Model
      */
     protected $casts = [
         'tanggal_kedaluwarsa' => 'date',
-        'jumlah_stock' => 'integer',
-        'minimum_stock' => 'integer',
+        'jumlah_stock' => 'decimal:3',
+        'minimum_stock' => 'decimal:3',
         'format_kimia' => 'boolean',
     ];
 

@@ -16,6 +16,12 @@ class PeriodeStok extends Model
         'status',
     ];
 
+    protected $casts = [
+        'stok_awal' => 'decimal:3', // <-- TAMBAHKAN INI
+        'stok_akhir' => 'decimal:3', // <-- TAMBAHKAN INI
+    ];
+
+
     // Relasi ke Bahan
     public function bahan()
     {

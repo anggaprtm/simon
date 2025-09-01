@@ -56,7 +56,7 @@ class TransaksiStokController extends Controller
         }
 
         $request->validate([
-            'jumlah' => 'required|integer|min:1',
+            'jumlah' => 'required|numeric|gt:0',
             'tanggal_transaksi' => 'required|date',
             'keterangan' => 'nullable|string',
         ]);
@@ -121,7 +121,7 @@ class TransaksiStokController extends Controller
         
         // Validasi agar jumlah keluar tidak melebihi stok yang ada
         $request->validate([
-            'jumlah' => 'required|integer|min:1|max:' . $bahan->jumlah_stock,
+            'jumlah' => 'required|numeric|gt:0' . $bahan->jumlah_stock,
             'tanggal_transaksi' => 'required|date',
             'keterangan' => 'nullable|string',
         ]);
@@ -197,7 +197,7 @@ class TransaksiStokController extends Controller
 
 
         $request->validate([
-            'stok_fisik' => 'required|integer|min:0',
+            'stok_fisik' => 'required|numeric|min:0',
             'keterangan' => 'required|string',
         ]);
 

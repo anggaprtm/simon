@@ -55,7 +55,7 @@ class PengajuanPengadaanController extends Controller
             'semester' => 'required|in:Ganjil,Genap',
             'items' => 'required|array|min:1',
             'items.*.id_master_barang' => 'required|exists:master_barangs,id',
-            'items.*.jumlah' => 'required|integer|min:1',
+            'items.*.jumlah' => 'required|numeric|gt:0',
             'items.*.id_satuan' => 'required|exists:satuans,id',
             'items.*.harga_satuan' => 'required|integer|min:0',
             'items.*.spesifikasi' => 'nullable|string',

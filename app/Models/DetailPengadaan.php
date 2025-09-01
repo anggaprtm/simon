@@ -13,6 +13,11 @@ class DetailPengadaan extends Model
         'volume', 'id_satuan', 'harga_satuan', 'jumlah', 'link_referensi'
     ];
 
+    protected $casts = [
+        'jumlah' => 'decimal:3', // <-- TAMBAHKAN INI
+        'harga_satuan' => 'integer',
+    ];
+
     public function pengajuan()
     {
         return $this->belongsTo(PengajuanPengadaan::class, 'id_pengajuan_pengadaan');

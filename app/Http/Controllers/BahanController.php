@@ -115,8 +115,8 @@ class BahanController extends Controller
             ],
             'jenis_bahan' => 'nullable|string|max:100',
             'id_satuan' => 'required|exists:satuans,id',
-            'minimum_stock' => 'required|integer|min:0',
-            'jumlah_stock' => 'nullable|integer|min:0',
+            'minimum_stock' => 'required|numeric|min:0',
+            'jumlah_stock' => 'nullable|numeric|min:0',
             'tanggal_kedaluwarsa' => 'nullable|date',
         ]);
 
@@ -204,6 +204,8 @@ class BahanController extends Controller
                 }),
             ],
             'id_satuan' => 'required|exists:satuans,id',
+            'minimum_stock' => 'required|numeric|min:0',
+            'tanggal_kedaluwarsa' => 'nullable|date',
             // ... validasi lain seperti di store, kecuali jumlah_stock ...
         ]);
         

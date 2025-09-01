@@ -21,7 +21,7 @@
                         @csrf
                         <div>
                             <x-input-label for="jumlah" :value="__('Jumlah')" />
-                            <x-text-input id="jumlah" class="block mt-1 w-full" type="number" name="jumlah" :value="old('jumlah')" min="1" required autofocus />
+                            <x-text-input id="jumlah" class="block mt-1 w-full" type="number" name="jumlah" :value="old('jumlah')" min="1" step="any" required autofocus />
                             <x-input-error :messages="$errors->get('jumlah')" class="mt-2" />
                         </div>
                         <div class="mt-4">

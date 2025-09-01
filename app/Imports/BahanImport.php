@@ -125,8 +125,8 @@ class BahanImport implements ToCollection, WithHeadingRow, WithValidation
                                  ->orWhere('id_program_studi', $this->user->id_program_studi);
                 })
             ],
-            '*.minimum_stock' => 'nullable|integer|min:0',
-            '*.jumlah_stock_awal' => 'nullable|integer|min:0',
+            '*.minimum_stock' => 'nullable|numeric|min:0',
+            '*.jumlah_stock_awal' => 'nullable|numeric|min:0',
             '*.tanggal_kedaluwarsa' => 'nullable|date_format:Y-m-d', // Pastikan format tanggal YYYY-MM-DD
         ];
     }

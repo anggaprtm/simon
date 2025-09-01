@@ -28,9 +28,9 @@ class Transaksi extends Model
      */
     protected $casts = [
         'tanggal_transaksi' => 'datetime',
-        'jumlah' => 'integer',
-        'stock_sebelum' => 'integer',
-        'stock_sesudah' => 'integer',
+        'jumlah' => 'decimal:3',
+        'stock_sebelum' => 'decimal:3',
+        'stock_sesudah' => 'decimal:3',
     ];
 
     /**
