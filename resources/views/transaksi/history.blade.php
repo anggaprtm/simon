@@ -12,7 +12,7 @@
                     <div class="mb-4 p-4 bg-gray-100 rounded-lg">
                         <h3 class="font-bold text-lg">{{ $bahan->nama_bahan }} ({{ $bahan->merk }})</h3>
                         <p>Kode: {{ $bahan->kode_bahan }}</p>
-                        <p>Stok Saat Ini: <span class="font-bold text-blue-600">{{ $bahan->jumlah_stock }} {{ $bahan->satuanRel->nama_satuan ?? '' }}</span></p>
+                        <p>Stok Saat Ini: <span class="font-bold text-blue-600">{{ $bahan->formatted_stock }}</span></p>
                     </div>
 
                     <div class="overflow-x-auto">
@@ -36,8 +36,8 @@
                                                 {{ str_replace('_', ' ', $transaksi->jenis_transaksi) }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4">{{ $transaksi->jumlah }}</td>
-                                        <td class="px-6 py-4 font-bold">{{ $transaksi->stock_sesudah }}</td>
+                                        <td class="px-6 py-4">{{ $transaksi->formatted_jumlah }}</td>
+                                        <td class="px-6 py-4 font-bold">{{ $transaksi->formatted_stock_sesudah }}</td>
                                         <td class="px-6 py-4">{{ $transaksi->user->name }}</td>
                                         <td class="px-6 py-4">{{ $transaksi->keterangan }}</td>
                                     </tr>

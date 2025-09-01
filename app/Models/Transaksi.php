@@ -48,4 +48,62 @@ class Transaksi extends Model
     {
         return $this->belongsTo(User::class, 'id_user');
     }
+
+    public function getFormattedJumlahAttribute(): string
+    {
+        $jumlah = $this->attributes['jumlah'] ?? 0;
+        $namaSatuan = $this->bahan->satuanRel->nama_satuan ?? ''; // ambil dari relasi bahan
+        $namaSatuanLower = strtolower($namaSatuan);
+
+        // Konversi ml -> L dan gr -> Kg
+        if ($namaSatuanLower === 'ml' && $jumlah >= 1000) {
+            $jumlahKonversi = $jumlah / 1000;
+            $formatted = number_format($jumlahKonversi, 3, ',', '.');
+            return rtrim(rtrim($formatted, '0'), ',') . ' L';
+        } elseif ($namaSatuanLower === 'gr' && $jumlah >= 1000) {
+            $jumlahKonversi = $jumlah / 1000;
+            $formatted = number_format($jumlahKonversi, 3, ',', '.');
+            return rtrim(rtrim($formatted, '0'), ',') . ' Kg';
+        }
+
+        // Default tampilkan jumlah + satuan asli
+        if (fmod($jumlah, 1) == 0) {
+            // Bilangan bulat
+            $formattedJumlah = number_format($jumlah, 0, ',', '.');
+        } else {
+            // Bilangan desimal
+            $formattedJumlah = rtrim(rtrim(number_format($jumlah, 3, ',', '.'), '0'), ',');
+        }
+
+        return trim($formattedJumlah . ' ' . $namaSatuan);
+    }
+
+    public function getFormattedStockSesudahAttribute(): string
+    {
+        $jumlah = $this->attributes['stock_sesudah'] ?? 0;
+        $namaSatuan = $this->bahan->satuanRel->nama_satuan ?? '';
+        $namaSatuanLower = strtolower($namaSatuan);
+
+        // Konversi ml -> L dan gr -> Kg
+        if ($namaSatuanLower === 'ml' && $jumlah >= 1000) {
+            $jumlahKonversi = $jumlah / 1000;
+            $formatted = number_format($jumlahKonversi, 3, ',', '.');
+            return rtrim(rtrim($formatted, '0'), ',') . ' L';
+        } elseif ($namaSatuanLower === 'gr' && $jumlah >= 1000) {
+            $jumlahKonversi = $jumlah / 1000;
+            $formatted = number_format($jumlahKonversi, 3, ',', '.');
+            return rtrim(rtrim($formatted, '0'), ',') . ' Kg';
+        }
+
+        // Default tampilkan jumlah + satuan asli
+        if (fmod($jumlah, 1) == 0) {
+            $formattedJumlah = number_format($jumlah, 0, ',', '.');
+        } else {
+            $formattedJumlah = rtrim(rtrim(number_format($jumlah, 3, ',', '.'), '0'), ',');
+        }
+
+        return trim($formattedJumlah . ' ' . $namaSatuan);
+    }
+
+
 }

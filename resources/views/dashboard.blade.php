@@ -80,7 +80,7 @@
                             <li>
                                 <a href="{{ route('transaksi.history', $bahan->id) }}" class="text-blue-500 hover:underline">
                                     {{ $bahan->nama_bahan }}
-                                </a> - Sisa <span class="font-bold">{{ $bahan->jumlah_stock }} {{ $bahan->satuanRel->nama_satuan ?? '-' }}</span>
+                                </a> - Sisa <span class="font-bold">{{ $bahan->formatted_stock }}</span>
                             </li>
                             @empty
                             <p class="text-gray-500">Tidak ada bahan yang stoknya menipis.</p>
@@ -119,7 +119,7 @@
                                     <td class="py-2">{{ \Carbon\Carbon::parse($trx->tanggal_transaksi)->diffForHumans() }}</td>
                                     <td class="py-2">{{ $trx->user->name }} mencatat
                                         <span class="font-semibold {{ str_contains($trx->jenis_transaksi, 'masuk') ? 'text-green-600' : 'text-red-600' }}">{{ $trx->jenis_transaksi }}</span>
-                                        sebanyak {{ $trx->jumlah }} {{ $trx->bahan->satuanRel->nama_satuan }} untuk bahan {{ $trx->bahan->nama_bahan }}.
+                                        sebanyak {{ $trx->formatted_jumlah }} untuk bahan {{ $trx->bahan->nama_bahan }}.
                                     </td>
                                 </tr>
                                 @endforeach

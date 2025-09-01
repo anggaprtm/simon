@@ -97,12 +97,8 @@ class TransaksiStokController extends Controller
         Gate::authorize('update-bahan', $bahan);
 
         // 1. Cek status periode aktif untuk bahan ini
-        // Kita menggunakan relasi hasOne 'periodeAktif' yang sudah kita buat di Model Bahan
         $periodeAktif = $bahan->periodeAktif; 
 
-        // Cek jika tidak ada periode aktif (misalnya belum dibuat) atau statusnya sudah 'ditutup'
-        // Relasi 'periodeAktif' sudah otomatis memfilter yang statusnya 'aktif',
-        // jadi jika hasilnya null, berarti tidak ada periode yang aktif.
         if (!$periodeAktif) {
             return redirect()->back()
                 ->with('error', 'Tidak dapat membuat transaksi. Tidak ada periode aktif untuk bahan ini atau periode sudah ditutup.')
@@ -110,7 +106,6 @@ class TransaksiStokController extends Controller
         }
 
         // 2. Cek apakah tanggal transaksi yang diinput sesuai dengan tahun periode aktif
-        // Ambil tahun dari tanggal yang diinput pengguna
         $tahunTransaksi = date('Y', strtotime($request->tanggal_transaksi));
 
         if ($tahunTransaksi != $periodeAktif->tahun_periode) {
@@ -118,12 +113,22 @@ class TransaksiStokController extends Controller
                 ->with('error', 'Tanggal transaksi harus berada dalam periode tahun yang aktif saat ini (Tahun ' . $periodeAktif->tahun_periode . ').')
                 ->withInput();
         }
-        
-        // Validasi agar jumlah keluar tidak melebihi stok yang ada
+
+        // --- Fix: konversi input jumlah dari koma ke titik ---
+        $request->merge([
+            'jumlah' => str_replace(',', '.', $request->jumlah),
+        ]);
+
+        // 3. Validasi input
         $request->validate([
-            'jumlah' => 'required|numeric|gt:0' . $bahan->jumlah_stock,
-            'tanggal_transaksi' => 'required|date',
-            'keterangan' => 'nullable|string',
+            'jumlah' => [
+                'required',
+                'numeric',
+                'gt:0', // harus lebih dari 0
+                'lte:' . $bahan->jumlah_stock, // tidak boleh lebih dari stok tersedia
+            ],
+            'tanggal_transaksi' => ['required', 'date'],
+            'keterangan' => ['nullable', 'string'],
         ]);
 
         try {
@@ -154,6 +159,7 @@ class TransaksiStokController extends Controller
 
         return redirect()->route('bahan.index')->with('success', 'Transaksi stok keluar berhasil dicatat.');
     }
+
 
     // Menampilkan riwayat transaksi
     public function history(Bahan $bahan)
