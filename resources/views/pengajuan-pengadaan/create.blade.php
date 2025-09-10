@@ -88,7 +88,7 @@
                         </select>
                     </td>
                     <td class="p-2"><input type="text" name="items[${itemIndex}][spesifikasi]" class="w-full border-gray-300 rounded-md shadow-sm"></td>
-                    <td class="p-2"><input type="number" name="items[${itemIndex}][jumlah]" class="w-24 border-gray-300 rounded-md shadow-sm" required min="1"></td>
+                    <td class="p-2"><input type="number" name="items[${itemIndex}][jumlah]" class="w-24 border-gray-300 rounded-md shadow-sm" step="any" required min="0.001"></td>
                     <td class="p-2">
                         <select name="items[${itemIndex}][id_satuan]" class="w-24 border-gray-300 rounded-md shadow-sm" required>
                             @foreach($satuans as $satuan)

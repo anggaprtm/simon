@@ -18,7 +18,7 @@
                     <div class="mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-r-lg">
                         <h3 class="font-bold text-lg">{{ $bahan->nama_bahan }} ({{ $bahan->merk }})</h3>
                         <p>Kode: {{ $bahan->kode_bahan }}</p>
-                        <p>Stok Menurut Sistem: <span class="font-bold text-xl text-blue-600">{{ $bahan->jumlah_stock }} {{ $bahan->satuan }}</span></p>
+                        <p>Stok Menurut Sistem: <span class="font-bold text-xl text-blue-600">{{ $bahan->formatted_stock }}</span></p>
                     </div>
 
                     <form action="{{ route('penyesuaian.store', $bahan->id) }}" method="POST">
