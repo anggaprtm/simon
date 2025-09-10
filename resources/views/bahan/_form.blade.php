@@ -1,4 +1,4 @@
-{{-- resources/views/bahan/_form.blade.php (SUDAH DIPERBAIKI) --}}
+{{-- resources/views/bahan/_form.blade.php --}}
 @csrf
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div>
@@ -58,7 +58,7 @@
     </div>
     <div>
         <x-input-label for="minimum_stock" :value="__('Stok Minimum')" />
-        <x-text-input id="minimum_stock" class="block mt-1 w-full" type="number" name="minimum_stock" :value="old('minimum_stock', $bahan->minimum_stock ?? 0)" step="any" required />
+        <x-text-input id="minimum_stock" class="block mt-1 w-full" type="number" name="minimum_stock" :value="old('minimum_stock', fmod($bahan->minimum_stock ?? 0, 1) == 0 ? (int) $bahan->minimum_stock : number_format($bahan->minimum_stock, 3, '.', ''))" step="any" required />
         <x-input-error :messages="$errors->get('minimum_stock')" class="mt-2" />
     </div>
     <div>
