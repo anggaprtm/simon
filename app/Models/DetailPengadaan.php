@@ -23,12 +23,18 @@ class DetailPengadaan extends Model
         'approved_jumlah',
         'status_item',
         'catatan_revisi',
+        'is_direalisasi',
+        'realisasi_qty',
+        'konversi_nilai',
         'link_referensi',
     ];
 
     protected $casts = [
         'jumlah' => 'decimal:3',
         'approved_jumlah' => 'decimal:3',
+        'realisasi_qty' => 'decimal:3',
+        'konversi_nilai' => 'decimal:6',
+        'is_direalisasi' => 'boolean',
         'harga_satuan' => 'integer',
     ];
 

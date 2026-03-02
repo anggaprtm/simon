@@ -34,7 +34,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('bahan', BahanController::class);
     Route::get('pengajuan-pengadaan/{pengajuanPengadaan}/cetak-nota', [PengajuanPengadaanController::class, 'cetakNotaDinas'])->name('pengajuan-pengadaan.cetakNota');
     Route::post('pengajuan-pengadaan/{pengajuanPengadaan}/ajukan-final', [PengajuanPengadaanController::class, 'ajukanFinal'])->name('pengajuan-pengadaan.ajukanFinal');
-    Route::post('pengajuan-pengadaan/{pengajuanPengadaan}/realisasi-stok', [PengajuanPengadaanController::class, 'realisasiStokMasuk'])->name('pengajuan-pengadaan.realisasiStok');
+    Route::get('pengajuan-pengadaan/{pengajuanPengadaan}/realisasi', [PengajuanPengadaanController::class, 'realisasiForm'])->name('pengajuan-pengadaan.realisasiForm');
+    Route::post('pengajuan-pengadaan/{pengajuanPengadaan}/realisasi/{detailPengadaan}', [PengajuanPengadaanController::class, 'realisasiItem'])->name('pengajuan-pengadaan.realisasiItem');
     Route::post('pengajuan-pengadaan/{pengajuanPengadaan}/setujui', [PengajuanPengadaanController::class, 'setujui'])->name('pengajuan-pengadaan.setujui');
     Route::post('pengajuan-pengadaan/{pengajuanPengadaan}/tolak', [PengajuanPengadaanController::class, 'tolak'])->name('pengajuan-pengadaan.tolak');
     Route::resource('pengajuan-pengadaan', PengajuanPengadaanController::class);

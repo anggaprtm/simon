@@ -13,10 +13,7 @@
 
 
                 @if(Auth::id() === $pengajuanPengadaan->id_user && $pengajuanPengadaan->status === 'Disetujui')
-                    <form action="{{ route('pengajuan-pengadaan.realisasiStok', $pengajuanPengadaan) }}" method="POST" onsubmit="return confirm('Proses realisasi stok masuk dari item yang disetujui?');" class="inline">
-                        @csrf
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Input Stok Masuk</button>
-                    </form>
+                    <a href="{{ route('pengajuan-pengadaan.realisasiForm', $pengajuanPengadaan) }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">Input Stok Masuk</a>
                 @endif
 
                 @if($pengajuanPengadaan->status !== 'Draft')

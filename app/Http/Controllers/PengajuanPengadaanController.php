@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Bahan;
 use App\Models\PengajuanPengadaan;
 use App\Models\Satuan;
+use App\Models\DetailPengadaan;
+use App\Models\Gudang;
+use App\Models\PeriodeStok;
 use App\Models\Transaksi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -250,31 +253,53 @@ class PengajuanPengadaanController extends Controller
             ->with('success', 'Pengajuan berhasil diajukan dan siap direview Fakultas.');
     }
 
-
-    public function realisasiStokMasuk(PengajuanPengadaan $pengajuanPengadaan)
+    public function realisasiForm(PengajuanPengadaan $pengajuanPengadaan)
     {
         if (Auth::id() !== $pengajuanPengadaan->id_user || $pengajuanPengadaan->status !== 'Disetujui') {
             abort(403, 'AKSI TIDAK DIIZINKAN.');
         }
 
-        $pengajuanPengadaan->load('details');
-        $eligibleDetails = $pengajuanPengadaan->details->filter(function ($detail) {
-            return !is_null($detail->id_bahan)
-                && in_array($detail->status_item, ['disetujui', 'disetujui_sebagian'])
-                && (float) $detail->approved_jumlah > 0;
-        });
+        $pengajuanPengadaan->load(['details.bahan.satuanRel', 'details.satuan']);
+        $gudangs = Gudang::whereNull('id_program_studi')
+            ->orWhere('id_program_studi', Auth::user()->id_program_studi)
+            ->orderBy('nama_gudang')
+            ->get();
+        $satuans = Satuan::orderBy('nama_satuan')->get();
 
-        if ($eligibleDetails->isEmpty()) {
-            return redirect()->route('pengajuan-pengadaan.show', $pengajuanPengadaan)
-                ->with('error', 'Tidak ada item existing dengan jumlah disetujui untuk direalisasikan ke stok.');
+        return view('pengajuan-pengadaan.realisasi', compact('pengajuanPengadaan', 'gudangs', 'satuans'));
+    }
+
+    public function realisasiItem(Request $request, PengajuanPengadaan $pengajuanPengadaan, DetailPengadaan $detailPengadaan)
+    {
+        if (Auth::id() !== $pengajuanPengadaan->id_user || $pengajuanPengadaan->status !== 'Disetujui') {
+            abort(403, 'AKSI TIDAK DIIZINKAN.');
         }
 
-        DB::transaction(function () use ($eligibleDetails, $pengajuanPengadaan) {
-            foreach ($eligibleDetails as $detail) {
-                $bahan = Bahan::where('id', $detail->id_bahan)->lockForUpdate()->firstOrFail();
+        if ($detailPengadaan->id_pengajuan_pengadaan !== $pengajuanPengadaan->id) {
+            abort(404);
+        }
+
+        if (! in_array($detailPengadaan->status_item, ['disetujui', 'disetujui_sebagian'])) {
+            return redirect()->back()->with('error', 'Item ini tidak dalam status disetujui.');
+        }
+
+        if ($detailPengadaan->is_direalisasi) {
+            return redirect()->back()->with('error', 'Item ini sudah pernah direalisasikan.');
+        }
+
+        DB::transaction(function () use ($request, $detailPengadaan, $pengajuanPengadaan) {
+            if (!is_null($detailPengadaan->id_bahan)) {
+                $bahan = Bahan::where('id', $detailPengadaan->id_bahan)->lockForUpdate()->firstOrFail();
+                $konversi = 1;
+
+                if ((int) $detailPengadaan->id_satuan !== (int) $bahan->id_satuan) {
+                    $request->validate(['konversi_nilai' => 'required|numeric|gt:0']);
+                    $konversi = (float) $request->konversi_nilai;
+                }
+
+                $jumlahMasuk = (float) $detailPengadaan->approved_jumlah * $konversi;
 
                 $stokSebelum = (float) $bahan->jumlah_stock;
-                $jumlahMasuk = (float) $detail->approved_jumlah;
                 $stokSesudah = $stokSebelum + $jumlahMasuk;
 
                 Transaksi::create([
@@ -285,17 +310,79 @@ class PengajuanPengadaanController extends Controller
                     'stock_sebelum' => $stokSebelum,
                     'stock_sesudah' => $stokSesudah,
                     'tanggal_transaksi' => now(),
-                    'keterangan' => 'Realisasi pengadaan #' . $pengajuanPengadaan->id,
+                    'keterangan' => 'Realisasi pengadaan #' . $pengajuanPengadaan->id . ' item #' . $detailPengadaan->id,
                 ]);
 
                 $bahan->update(['jumlah_stock' => $stokSesudah]);
+
+                $detailPengadaan->update([
+                    'is_direalisasi' => true,
+                    'realisasi_qty' => $jumlahMasuk,
+                    'konversi_nilai' => $konversi,
+                ]);
+            } else {
+                $request->validate([
+                    'nama_bahan_baru' => 'required|string|max:255',
+                    'id_gudang' => 'required|exists:gudangs,id',
+                    'id_satuan_baru' => 'required|exists:satuans,id',
+                    'qty_realisasi' => 'required|numeric|gt:0',
+                    'merk_baru' => 'nullable|string|max:255',
+                    'jenis_bahan_baru' => 'nullable|string|max:100',
+                    'minimum_stock_baru' => 'nullable|numeric|min:0',
+                ]);
+
+                $kode = 'AUTO-' . $pengajuanPengadaan->id . '-' . $detailPengadaan->id;
+                $bahanBaru = Bahan::create([
+                    'kode_bahan' => $kode,
+                    'nama_bahan' => $request->nama_bahan_baru,
+                    'merk' => $request->merk_baru,
+                    'jenis_bahan' => $request->jenis_bahan_baru,
+                    'format_kimia' => false,
+                    'id_program_studi' => Auth::user()->id_program_studi,
+                    'id_gudang' => $request->id_gudang,
+                    'id_satuan' => $request->id_satuan_baru,
+                    'minimum_stock' => $request->minimum_stock_baru ?? 0,
+                    'jumlah_stock' => 0,
+                ]);
+
+                PeriodeStok::create([
+                    'id_bahan' => $bahanBaru->id,
+                    'tahun_periode' => date('Y'),
+                    'stok_awal' => 0,
+                    'status' => 'aktif',
+                ]);
+
+                $jumlahMasuk = (float) $request->qty_realisasi;
+                Transaksi::create([
+                    'id_bahan' => $bahanBaru->id,
+                    'id_user' => Auth::id(),
+                    'jenis_transaksi' => 'masuk',
+                    'jumlah' => $jumlahMasuk,
+                    'stock_sebelum' => 0,
+                    'stock_sesudah' => $jumlahMasuk,
+                    'tanggal_transaksi' => now(),
+                    'keterangan' => 'Realisasi item baru pengadaan #' . $pengajuanPengadaan->id . ' item #' . $detailPengadaan->id,
+                ]);
+
+                $bahanBaru->update(['jumlah_stock' => $jumlahMasuk]);
+
+                $detailPengadaan->update([
+                    'id_bahan' => $bahanBaru->id,
+                    'is_direalisasi' => true,
+                    'realisasi_qty' => $jumlahMasuk,
+                    'konversi_nilai' => null,
+                ]);
             }
 
-            $pengajuanPengadaan->update(['status' => 'Selesai']);
+            $totalApproved = $pengajuanPengadaan->details()->whereIn('status_item', ['disetujui', 'disetujui_sebagian'])->count();
+            $totalRealized = $pengajuanPengadaan->details()->whereIn('status_item', ['disetujui', 'disetujui_sebagian'])->where('is_direalisasi', true)->count();
+            if ($totalApproved > 0 && $totalApproved === $totalRealized) {
+                $pengajuanPengadaan->update(['status' => 'Selesai']);
+            }
         });
 
-        return redirect()->route('pengajuan-pengadaan.show', $pengajuanPengadaan)
-            ->with('success', 'Realisasi stok masuk dari pengajuan berhasil diproses.');
+        return redirect()->route('pengajuan-pengadaan.realisasiForm', $pengajuanPengadaan)
+            ->with('success', 'Realisasi item berhasil diproses.');
     }
 
     public function setujui(Request $request, PengajuanPengadaan $pengajuanPengadaan)
