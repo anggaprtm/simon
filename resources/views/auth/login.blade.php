@@ -42,7 +42,7 @@
 								<input id="email" type="text"
 									class="form-control @error('login') is-invalid @enderror"
 									name="login" value="{{ old('login') }}" required autofocus tabindex="1">
-								@error('email')
+								@error('login')
 									<span class="invalid-feedback" role="alert">
 										<strong>{{ $message }}</strong>
 									</span>
