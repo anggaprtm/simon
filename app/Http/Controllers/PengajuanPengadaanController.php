@@ -51,6 +51,7 @@ class PengajuanPengadaanController extends Controller
                 'id' => $b->id,
                 'text' => $b->nama_bahan,
                 'stock' => $b->jumlah_stock,
+                'stock_text' => $b->formatted_stock,
                 'satuan' => $b->satuanRel->nama_satuan ?? '-',
             ];
         })->values();
@@ -165,6 +166,7 @@ class PengajuanPengadaanController extends Controller
                 'id' => $b->id,
                 'text' => $b->nama_bahan,
                 'stock' => $b->jumlah_stock,
+                'stock_text' => $b->formatted_stock,
                 'satuan' => $b->satuanRel->nama_satuan ?? '-',
             ];
         })->values();

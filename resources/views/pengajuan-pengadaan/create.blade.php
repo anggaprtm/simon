@@ -117,12 +117,12 @@
                     $(select).val(String(item.item_ref)).trigger('change');
                 }
 
-                select.addEventListener('change', function () {
+                $(select).on('change', function () {
                     const selected = bahanList.find(b => String(b.id) === String(this.value));
                     const stockCell = row.querySelector('.item-stock');
                     const typeCell = row.querySelector('.item-type');
                     if (selected) {
-                        stockCell.textContent = `Stok saat ini: ${selected.stock} ${selected.satuan}`;
+                        stockCell.textContent = `Stok saat ini: ${selected.stock_text ?? (selected.stock + ' ' + selected.satuan)}`;
                         typeCell.textContent = 'Bahan existing';
                         typeCell.className = 'text-xs mt-1 item-type text-green-600';
                     } else if (this.value) {

@@ -26,6 +26,13 @@
                         @endif
                     @endcan
 
+                    @php
+                        $formatQty = function ($value) {
+                            $formatted = number_format((float) ($value ?? 0), 3, ',', '.');
+                            return rtrim(rtrim($formatted, '0'), ',');
+                        };
+                    @endphp
+
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
@@ -59,16 +66,16 @@
                                                 <div class="mt-1 text-green-700">Stok saat ini: {{ $stokSaatIni }}</div>
                                             @endif
                                         </td>
-                                        <td class="px-4 py-3">{{ $detail->jumlah }} {{ $detail->satuan->nama_satuan }}</td>
+                                        <td class="px-4 py-3">{{ $formatQty($detail->jumlah) }} {{ $detail->satuan->nama_satuan }}</td>
                                         <td class="px-4 py-3">
                                             @can('manage-pengajuan')
                                                 @if($pengajuanPengadaan->status === 'Diajukan')
                                                     <input type="number" name="approval_items[{{ $detail->id }}][approved_jumlah]" step="any" min="0" max="{{ $detail->jumlah }}" value="{{ $detail->jumlah }}" class="w-28 border-gray-300 rounded-md shadow-sm">
                                                 @else
-                                                    {{ $detail->approved_jumlah }} {{ $detail->satuan->nama_satuan }}
+                                                    {{ $formatQty($detail->approved_jumlah) }} {{ $detail->satuan->nama_satuan }}
                                                 @endif
                                             @else
-                                                {{ $detail->approved_jumlah }} {{ $detail->satuan->nama_satuan }}
+                                                {{ $formatQty($detail->approved_jumlah) }} {{ $detail->satuan->nama_satuan }}
                                             @endcan
                                         </td>
                                         <td class="px-4 py-3">
