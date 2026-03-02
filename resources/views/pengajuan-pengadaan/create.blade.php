@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <form action="{{ route('pengajuan-pengadaan.store') }}" method="POST">
@@ -30,8 +30,8 @@
                         <h3 class="text-lg font-semibold border-t pt-4 mb-2">Detail Barang</h3>
                         <p class="text-sm text-gray-600 mb-4">Ketik untuk mencari bahan existing atau ketik nama bahan baru. Existing akan menampilkan stok saat ini.</p>
 
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full" id="items-table">
+                        <div class="overflow-x-auto pb-2">
+                            <table class="min-w-[1450px]" id="items-table">
                                 <thead>
                                     <tr>
                                         <th class="px-2 py-2 text-left">Bahan (existing / baru)</th>
@@ -92,10 +92,10 @@
                     </td>
                     <td class="p-2 align-top text-sm item-stock text-gray-600">-</td>
                     <td class="p-2 align-top"><input type="text" name="items[${idx}][spesifikasi]" class="w-full border-gray-300 rounded-md shadow-sm" value="${item?.spesifikasi ?? ''}"></td>
-                    <td class="p-2 align-top"><input type="number" step="any" min="0.001" name="items[${idx}][jumlah]" class="w-28 border-gray-300 rounded-md shadow-sm" value="${item?.jumlah ?? ''}" required></td>
+                    <td class="p-2 align-top"><input type="number" step="any" min="0.001" name="items[${idx}][jumlah]" class="w-full min-w-[160px] border-gray-300 rounded-md shadow-sm" value="${item?.jumlah ?? ''}" required></td>
                     <td class="p-2 align-top"><select name="items[${idx}][id_satuan]" class="w-full border-gray-300 rounded-md shadow-sm" required>${satuanOptions(item?.id_satuan)}</select></td>
-                    <td class="p-2 align-top"><input type="number" min="0" name="items[${idx}][harga_satuan]" class="w-36 border-gray-300 rounded-md shadow-sm" value="${item?.harga_satuan ?? ''}" required></td>
-                    <td class="p-2 align-top"><input type="url" name="items[${idx}][link_referensi]" class="w-full border-gray-300 rounded-md shadow-sm" value="${item?.link_referensi ?? ''}"></td>
+                    <td class="p-2 align-top"><input type="number" min="0" name="items[${idx}][harga_satuan]" class="w-full min-w-[170px] border-gray-300 rounded-md shadow-sm" value="${item?.harga_satuan ?? ''}" required></td>
+                    <td class="p-2 align-top"><input type="url" name="items[${idx}][link_referensi]" class="w-full min-w-[220px] border-gray-300 rounded-md shadow-sm" value="${item?.link_referensi ?? ''}"></td>
                     <td class="p-2 align-top"><button type="button" class="remove-item-btn text-red-600 hover:underline">Hapus</button></td>
                 `;
 

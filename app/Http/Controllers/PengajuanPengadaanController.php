@@ -98,8 +98,13 @@ class PengajuanPengadaanController extends Controller
 
         $itemsPerPage = 20;
         $jumlah_lampiran_angka = (int) ceil(count($pengajuanPengadaan->details) / $itemsPerPage);
-        $formatter = new \NumberFormatter('id', \NumberFormatter::SPELLOUT);
-        $jumlah_lampiran = ucwords($formatter->format(max(1, $jumlah_lampiran_angka)));
+
+        if (class_exists('NumberFormatter')) {
+            $formatter = new \NumberFormatter('id', \NumberFormatter::SPELLOUT);
+            $jumlah_lampiran = ucwords($formatter->format(max(1, $jumlah_lampiran_angka)));
+        } else {
+            $jumlah_lampiran = (string) max(1, $jumlah_lampiran_angka);
+        }
 
         $logo_base64 = base64_encode(@file_get_contents(public_path('images/logo.png'))) ?: '';
 
