@@ -73,6 +73,19 @@
                 return satuans.map(s => `<option value="${s.id}" ${String(selectedId)===String(s.id)?'selected':''}>${s.nama_satuan}</option>`).join('');
             }
 
+            function normalizeNumberValue(value) {
+                if (value === null || value === undefined || value === '') {
+                    return '';
+                }
+
+                const parsed = Number(value);
+                if (!Number.isFinite(parsed)) {
+                    return value;
+                }
+
+                return parsed.toString();
+            }
+
             function createRow(item = null) {
                 const idx = itemIndex++;
                 const row = document.createElement('tr');
@@ -82,9 +95,9 @@
                     <td class="p-2 align-top"><select name="items[${idx}][item_ref]" class="item-ref select2-bahan w-full" required></select><p class="text-xs mt-1 item-type text-blue-600">Pilih bahan existing atau ketik bahan baru.</p></td>
                     <td class="p-2 align-top text-sm item-stock text-gray-600">-</td>
                     <td class="p-2 align-top"><input type="text" name="items[${idx}][spesifikasi]" class="w-full border-gray-300 rounded-md shadow-sm" value="${item?.spesifikasi ?? ''}"></td>
-                    <td class="p-2 align-top"><input type="number" step="any" min="0.001" name="items[${idx}][jumlah]" class="w-full min-w-[160px] border-gray-300 rounded-md shadow-sm" value="${item?.jumlah ?? ''}" required></td>
+                    <td class="p-2 align-top"><input type="number" step="any" min="0.001" name="items[${idx}][jumlah]" class="w-full min-w-[160px] border-gray-300 rounded-md shadow-sm" value="${normalizeNumberValue(item?.jumlah)}" required></td>
                     <td class="p-2 align-top"><select name="items[${idx}][id_satuan]" class="w-full border-gray-300 rounded-md shadow-sm" required>${satuanOptions(item?.id_satuan)}</select></td>
-                    <td class="p-2 align-top"><input type="number" min="0" name="items[${idx}][harga_satuan]" class="w-full min-w-[170px] border-gray-300 rounded-md shadow-sm" value="${item?.harga_satuan ?? ''}" required></td>
+                    <td class="p-2 align-top"><input type="number" min="0" name="items[${idx}][harga_satuan]" class="w-full min-w-[170px] border-gray-300 rounded-md shadow-sm" value="${normalizeNumberValue(item?.harga_satuan)}" required></td>
                     <td class="p-2 align-top"><input type="url" name="items[${idx}][link_referensi]" class="w-full min-w-[220px] border-gray-300 rounded-md shadow-sm" value="${item?.link_referensi ?? ''}"></td>
                     <td class="p-2 align-top"><button type="button" class="remove-item-btn text-red-600 hover:underline">Hapus</button></td>
                 `;
