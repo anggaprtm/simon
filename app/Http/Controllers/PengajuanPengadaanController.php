@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Bahan;
 use App\Models\PengajuanPengadaan;
 use App\Models\Satuan;
+use App\Models\Transaksi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Barryvdh\DomPDF\Facade\Pdf;
 use setasign\Fpdi\Fpdi;
 use setasign\Fpdi\PdfParser\StreamReader;
 
@@ -114,18 +114,20 @@ class PengajuanPengadaanController extends Controller
             'logo_base64'     => $logo_base64,
         ];
 
-        if (! class_exists('Barry\\DomPDF\\Facade\\Pdf')) {
+        try {
+            $pdfPortrait = app('dompdf.wrapper')
+                ->loadView('pengajuan-pengadaan.pdf.nota_dinas_portrait', $data)
+                ->setPaper('a4', 'portrait')
+                ->output();
+
+            $pdfLandscape = app('dompdf.wrapper')
+                ->loadView('pengajuan-pengadaan.pdf.nota_dinas_lampiran_landscape', $data)
+                ->setPaper('a4', 'landscape')
+                ->output();
+        } catch (\Throwable $e) {
             return redirect()->route('pengajuan-pengadaan.show', $pengajuanPengadaan)
-                ->with('error', 'Fitur cetak PDF belum tersedia. Dependensi DomPDF tidak ditemukan.');
+                ->with('error', 'Fitur cetak PDF belum tersedia/konfigurasi bermasalah: ' . $e->getMessage());
         }
-
-        $pdfPortrait = Pdf::loadView('pengajuan-pengadaan.pdf.nota_dinas_portrait', $data)
-            ->setPaper('a4', 'portrait')
-            ->output();
-
-        $pdfLandscape = Pdf::loadView('pengajuan-pengadaan.pdf.nota_dinas_lampiran_landscape', $data)
-            ->setPaper('a4', 'landscape')
-            ->output();
 
         $final = new Fpdi();
 
@@ -246,6 +248,54 @@ class PengajuanPengadaanController extends Controller
 
         return redirect()->route('pengajuan-pengadaan.show', $pengajuanPengadaan)
             ->with('success', 'Pengajuan berhasil diajukan dan siap direview Fakultas.');
+    }
+
+
+    public function realisasiStokMasuk(PengajuanPengadaan $pengajuanPengadaan)
+    {
+        if (Auth::id() !== $pengajuanPengadaan->id_user || $pengajuanPengadaan->status !== 'Disetujui') {
+            abort(403, 'AKSI TIDAK DIIZINKAN.');
+        }
+
+        $pengajuanPengadaan->load('details');
+        $eligibleDetails = $pengajuanPengadaan->details->filter(function ($detail) {
+            return !is_null($detail->id_bahan)
+                && in_array($detail->status_item, ['disetujui', 'disetujui_sebagian'])
+                && (float) $detail->approved_jumlah > 0;
+        });
+
+        if ($eligibleDetails->isEmpty()) {
+            return redirect()->route('pengajuan-pengadaan.show', $pengajuanPengadaan)
+                ->with('error', 'Tidak ada item existing dengan jumlah disetujui untuk direalisasikan ke stok.');
+        }
+
+        DB::transaction(function () use ($eligibleDetails, $pengajuanPengadaan) {
+            foreach ($eligibleDetails as $detail) {
+                $bahan = Bahan::where('id', $detail->id_bahan)->lockForUpdate()->firstOrFail();
+
+                $stokSebelum = (float) $bahan->jumlah_stock;
+                $jumlahMasuk = (float) $detail->approved_jumlah;
+                $stokSesudah = $stokSebelum + $jumlahMasuk;
+
+                Transaksi::create([
+                    'id_bahan' => $bahan->id,
+                    'id_user' => Auth::id(),
+                    'jenis_transaksi' => 'masuk',
+                    'jumlah' => $jumlahMasuk,
+                    'stock_sebelum' => $stokSebelum,
+                    'stock_sesudah' => $stokSesudah,
+                    'tanggal_transaksi' => now(),
+                    'keterangan' => 'Realisasi pengadaan #' . $pengajuanPengadaan->id,
+                ]);
+
+                $bahan->update(['jumlah_stock' => $stokSesudah]);
+            }
+
+            $pengajuanPengadaan->update(['status' => 'Selesai']);
+        });
+
+        return redirect()->route('pengajuan-pengadaan.show', $pengajuanPengadaan)
+            ->with('success', 'Realisasi stok masuk dari pengajuan berhasil diproses.');
     }
 
     public function setujui(Request $request, PengajuanPengadaan $pengajuanPengadaan)
