@@ -33,6 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('bahan/bulk-delete', [BahanController::class, 'bulkDelete'])->name('bahan.bulkDelete');
     Route::resource('bahan', BahanController::class);
     Route::get('pengajuan-pengadaan/{pengajuanPengadaan}/cetak-nota', [PengajuanPengadaanController::class, 'cetakNotaDinas'])->name('pengajuan-pengadaan.cetakNota');
+    Route::post('pengajuan-pengadaan/{pengajuanPengadaan}/ajukan-final', [PengajuanPengadaanController::class, 'ajukanFinal'])->name('pengajuan-pengadaan.ajukanFinal');
     Route::post('pengajuan-pengadaan/{pengajuanPengadaan}/setujui', [PengajuanPengadaanController::class, 'setujui'])->name('pengajuan-pengadaan.setujui');
     Route::post('pengajuan-pengadaan/{pengajuanPengadaan}/tolak', [PengajuanPengadaanController::class, 'tolak'])->name('pengajuan-pengadaan.tolak');
     Route::resource('pengajuan-pengadaan', PengajuanPengadaanController::class);

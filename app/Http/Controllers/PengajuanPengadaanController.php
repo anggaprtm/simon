@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use PDF;
+use Barryvdh\DomPDF\Facade\Pdf;
 use setasign\Fpdi\Fpdi;
 use setasign\Fpdi\PdfParser\StreamReader;
 
@@ -114,6 +114,11 @@ class PengajuanPengadaanController extends Controller
             'logo_base64'     => $logo_base64,
         ];
 
+        if (! class_exists('Barry\\DomPDF\\Facade\\Pdf')) {
+            return redirect()->route('pengajuan-pengadaan.show', $pengajuanPengadaan)
+                ->with('error', 'Fitur cetak PDF belum tersedia. Dependensi DomPDF tidak ditemukan.');
+        }
+
         $pdfPortrait = Pdf::loadView('pengajuan-pengadaan.pdf.nota_dinas_portrait', $data)
             ->setPaper('a4', 'portrait')
             ->output();
@@ -216,6 +221,31 @@ class PengajuanPengadaanController extends Controller
         }
 
         return redirect()->route('pengajuan-pengadaan.index')->with('success', 'Pengajuan berhasil diperbarui.');
+    }
+
+
+    public function ajukanFinal(PengajuanPengadaan $pengajuanPengadaan)
+    {
+        if (Auth::id() !== $pengajuanPengadaan->id_user || $pengajuanPengadaan->status !== 'Draft') {
+            abort(403, 'AKSI TIDAK DIIZINKAN.');
+        }
+
+        if (! $pengajuanPengadaan->details()->exists()) {
+            return redirect()->route('pengajuan-pengadaan.show', $pengajuanPengadaan)
+                ->with('error', 'Pengajuan tidak bisa diajukan karena belum memiliki item.');
+        }
+
+        DB::transaction(function () use ($pengajuanPengadaan) {
+            $pengajuanPengadaan->update(['status' => 'Diajukan']);
+            $pengajuanPengadaan->details()->update([
+                'status_item' => 'diajukan',
+                'approved_jumlah' => DB::raw('jumlah'),
+                'catatan_revisi' => null,
+            ]);
+        });
+
+        return redirect()->route('pengajuan-pengadaan.show', $pengajuanPengadaan)
+            ->with('success', 'Pengajuan berhasil diajukan dan siap direview Fakultas.');
     }
 
     public function setujui(Request $request, PengajuanPengadaan $pengajuanPengadaan)

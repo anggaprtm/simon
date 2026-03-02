@@ -1,8 +1,20 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center gap-3">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('Detail Pengajuan Pengadaan') }}</h2>
-            <a href="{{ route('pengajuan-pengadaan.cetakNota', $pengajuanPengadaan->id) }}" target="_blank" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">Cetak Nota Dinas</a>
+            <div class="flex items-center gap-2">
+                @if(Auth::id() === $pengajuanPengadaan->id_user && $pengajuanPengadaan->status === 'Draft')
+                    <a href="{{ route('pengajuan-pengadaan.edit', $pengajuanPengadaan) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">Edit Draft</a>
+                    <form action="{{ route('pengajuan-pengadaan.ajukanFinal', $pengajuanPengadaan) }}" method="POST" onsubmit="return confirm('Ajukan draft ini untuk direview Fakultas?');" class="inline">
+                        @csrf
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Ajukan Final</button>
+                    </form>
+                @endif
+
+                @if($pengajuanPengadaan->status !== 'Draft')
+                    <a href="{{ route('pengajuan-pengadaan.cetakNota', $pengajuanPengadaan->id) }}" target="_blank" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">Cetak Nota Dinas</a>
+                @endif
+            </div>
         </div>
     </x-slot>
 
@@ -10,6 +22,13 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
+                    @if (session('success'))
+                        <div class="mb-4 rounded border border-green-300 bg-green-50 p-3 text-green-700">{{ session('success') }}</div>
+                    @endif
+                    @if (session('error'))
+                        <div class="mb-4 rounded border border-red-300 bg-red-50 p-3 text-red-700">{{ session('error') }}</div>
+                    @endif
+
                     <div class="grid grid-cols-2 gap-4 mb-6 border-b pb-4">
                         <div><p class="text-sm text-gray-500">Program Studi</p><p class="font-semibold">{{ $pengajuanPengadaan->programStudi->nama_program_studi }}</p></div>
                         <div><p class="text-sm text-gray-500">Periode</p><p class="font-semibold">{{ $pengajuanPengadaan->tahun_ajaran }} - {{ $pengajuanPengadaan->semester }}</p></div>
