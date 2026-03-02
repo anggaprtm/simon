@@ -26,6 +26,17 @@
     </div>
 
     {{-- Tabel Laporan --}}
+    @php
+        $formatStock = function ($value) {
+            if ($value === null || $value === '') {
+                return 'N/A';
+            }
+
+            $formatted = number_format((float) $value, 3, ',', '.');
+            return rtrim(rtrim($formatted, '0'), ',');
+        };
+    @endphp
+
     <table class="w-full text-sm text-left rtl:text-right text-gray-500">
         <thead class="text-xs text-gray-700 uppercase bg-gray-100">
             <tr>
@@ -56,8 +67,8 @@
                         <td class="px-4 py-2 border">{{ $item->kode_bahan }}</td>
                         <td class="px-4 py-2 border">{!! $item->nama_bahan_html !!}</td>
                         <td class="px-4 py-2 border">{{ $item->jenis_bahan ?? '-' }}</td>
-                        <td class="px-4 py-2 border">{{ $item->periodeAktif->stok_awal ?? 'N/A' }}</td>
-                        <td class="px-4 py-2 border font-bold">{{ $item->jumlah_stock }}</td>
+                        <td class="px-4 py-2 border">{{ $formatStock($item->periodeAktif->stok_awal) }}</td>
+                        <td class="px-4 py-2 border font-bold">{{ $formatStock($item->jumlah_stock) }}</td>
                         <td class="px-4 py-2 border">{{ $item->satuanRel->nama_satuan ?? '-' }}</td>
                         <td class="px-4 py-2 border">{{ $item->gudang->nama_gudang ?? '-' }}</td>
                         <td class="px-4 py-2 border">{{ $item->programStudi->kode_program_studi ?? '-' }}</td>
@@ -66,8 +77,8 @@
                         <td class="px-4 py-2 border">{{ $item->bahan->kode_bahan }}</td>
                         <td class="px-4 py-2 border">{!! $item->bahan->nama_bahan_html !!}</td>
                         <td class="px-4 py-2 border">{{ $item->bahan->jenis_bahan ?? '-' }}</td>
-                        <td class="px-4 py-2 border">{{ $item->stok_awal }}</td>
-                        <td class="px-4 py-2 border font-bold">{{ $item->stok_akhir }}</td>
+                        <td class="px-4 py-2 border">{{ $formatStock($item->stok_awal) }}</td>
+                        <td class="px-4 py-2 border font-bold">{{ $formatStock($item->stok_akhir) }}</td>
                         <td class="px-4 py-2 border">{{ $item->bahan->satuanRel->nama_satuan ?? '-' }}</td>
                         <td class="px-4 py-2 border">{{ $item->bahan->gudang->nama_gudang ?? '-' }}</td>
                         <td class="px-4 py-2 border">{{ $item->bahan->programStudi->kode_program_studi ?? '-' }}</td>

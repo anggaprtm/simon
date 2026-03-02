@@ -46,6 +46,17 @@
                         </div>
                     </form>
 
+                    @php
+                        $formatStock = function ($value) {
+                            if ($value === null || $value === '') {
+                                return 'N/A';
+                            }
+
+                            $formatted = number_format((float) $value, 3, ',', '.');
+                            return rtrim(rtrim($formatted, '0'), ',');
+                        };
+                    @endphp
+
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
@@ -73,8 +84,8 @@
                                             {{-- Tampilan untuk periode aktif, $item adalah model Bahan --}}
                                             <td style="text-align: center">{{ $item->kode_bahan }}</td>
                                             <td>{!! $item->nama_bahan_html !!}</td>
-                                            <td style="text-align: center">{{ $item->periodeAktif->stok_awal ?? 'N/A' }}</td>
-                                            <td class="font-bold" style="text-align: center">{{ $item->jumlah_stock }}</td>
+                                            <td style="text-align: center">{{ $formatStock($item->periodeAktif->stok_awal) }}</td>
+                                            <td class="font-bold" style="text-align: center">{{ $formatStock($item->jumlah_stock) }}</td>
                                             <td style="text-align: center">{{ $item->satuanRel->nama_satuan ?? '-' }}</td>
                                             <td style="text-align: center">{{ $item->gudang->nama_gudang ?? '-' }}</td>
                                             <td style="text-align: center">{{ $item->programStudi->kode_program_studi ?? '-' }}</td>
@@ -82,8 +93,8 @@
                                             {{-- Tampilan untuk periode tertutup, $item adalah model PeriodeStok --}}
                                             <td>{{ $item->bahan->kode_bahan }}</td>
                                             <td>{!! $item->bahan->nama_bahan_html !!}</td>
-                                            <td>{{ $item->stok_awal }}</td>
-                                            <td class="font-bold">{{ $item->stok_akhir }}</td>
+                                            <td>{{ $formatStock($item->stok_awal) }}</td>
+                                            <td class="font-bold">{{ $formatStock($item->stok_akhir) }}</td>
                                             <td>{{ $item->bahan->satuanRel->nama_satuan ?? '-' }}</td>
                                             <td>{{ $item->bahan->gudang->nama_gudang ?? '-' }}</td>
                                             <td>{{ $item->bahan->programStudi->kode_program_studi ?? '-' }}</td>

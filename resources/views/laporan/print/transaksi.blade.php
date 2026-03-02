@@ -43,7 +43,7 @@
                     </td>
                     <td class="border border-gray-300 px-6 py-4 whitespace-nowrap">{!! $transaksi->bahan->nama_bahan_html !!}</td>
                     <td class="border border-gray-300 px-6 py-4 whitespace-nowrap">{{ $transaksi->bahan->programStudi->kode_program_studi ?? 'N/A' }}</td>
-                    <td class="border border-gray-300 px-6 py-4 whitespace-nowrap">{{ $transaksi->jumlah }} {{ $transaksi->bahan->satuanRel->nama_satuan ?? '' }}</td>
+                    <td class="border border-gray-300 px-6 py-4 whitespace-nowrap">{{ $transaksi->formatted_jumlah }}</td>
                     <td class="border border-gray-300 px-6 py-4 whitespace-nowrap">{{ $transaksi->user->name ?? 'N/A' }}</td>
                     <td class="border border-gray-300 px-6 py-4">{{ $transaksi->keterangan }}</td>
                 </tr>
