@@ -74,51 +74,120 @@
             const addItemBtn = document.getElementById('add-item-btn');
             let itemIndex = 0;
 
-            // Fungsi untuk menambah baris item baru
-            function addItemRow() {
+            // Ambil data input lama dan error dari session Laravel
+            const oldItems = @json(old('items')) || [];
+            const errors = @json($errors->getMessages());
+
+            function addItemRow(itemData = null, index = null) {
+                const currentIndex = index !== null ? index : itemIndex;
+
                 const newRow = document.createElement('tr');
                 newRow.classList.add('border-t');
+                
+                // Cek apakah ada error untuk baris ini
+                const hasError = errors && errors[`items.${currentIndex}.id_bahan`];
+
                 newRow.innerHTML = `
-                    <td class="p-2">
-                        <select name="items[${itemIndex}][id_master_barang]" class="w-full border-gray-300 rounded-md shadow-sm" required>
-                            <option value="">Pilih Barang</option>
-                            @foreach($masterBarangs as $barang)
-                                <option value="{{ $barang->id }}">{{ $barang->nama_barang }}</option>
+                    <td class="p-2 align-top">
+                        <select name="items[${currentIndex}][id_bahan]" class="select2-bahan w-full" required>
+                            <option value="">Cari dan Pilih Bahan...</option>
+                            @foreach($bahans as $bahan)
+                                <option value="{{ $bahan->id }}" ${itemData && itemData.id_bahan == {{ $bahan->id }} ? 'selected' : ''}>
+                                    {!! $bahan->nama_bahan !!}
+                                </option>
                             @endforeach
                         </select>
+                        ${generateErrorHtml(`items.${currentIndex}.id_bahan`)}
                     </td>
-                    <td class="p-2"><input type="text" name="items[${itemIndex}][spesifikasi]" class="w-full border-gray-300 rounded-md shadow-sm"></td>
-                    <td class="p-2"><input type="number" name="items[${itemIndex}][jumlah]" class="w-24 border-gray-300 rounded-md shadow-sm" step="any" required min="0.001"></td>
-                    <td class="p-2">
-                        <select name="items[${itemIndex}][id_satuan]" class="w-24 border-gray-300 rounded-md shadow-sm" required>
+                    <td class="p-2 align-top">
+                        <input type="text" name="items[${currentIndex}][spesifikasi]" class="w-full border-gray-300 rounded-md shadow-sm" value="${itemData?.spesifikasi || ''}">
+                        ${generateErrorHtml(`items.${currentIndex}.spesifikasi`)}
+                    </td>
+                    <td class="p-2 align-top">
+                        <input type="number" name="items[${currentIndex}][jumlah]" class="w-24 border-gray-300 rounded-md shadow-sm" step="any" required min="0.001" value="${itemData?.jumlah || ''}">
+                        ${generateErrorHtml(`items.${currentIndex}.jumlah`)}
+                    </td>
+                    <td class="p-2 align-top">
+                        <select name="items[${currentIndex}][id_satuan]" class="w-24 border-gray-300 rounded-md shadow-sm" required>
                             @foreach($satuans as $satuan)
-                                <option value="{{ $satuan->id }}">{{ $satuan->nama_satuan }}</option>
+                                <option value="{{ $satuan->id }}" ${itemData && itemData.id_satuan == {{ $satuan->id }} ? 'selected' : ''}>
+                                    {{ $satuan->nama_satuan }}
+                                </option>
                             @endforeach
                         </select>
+                        ${generateErrorHtml(`items.${currentIndex}.id_satuan`)}
                     </td>
-                    <td class="p-2"><input type="number" name="items[${itemIndex}][harga_satuan]" class="w-40 border-gray-300 rounded-md shadow-sm" required min="0"></td>
-                    <td class="p-2"><input type="url" name="items[${itemIndex}][link_referensi]" placeholder="https://..." class="w-full border-gray-300 rounded-md shadow-sm"></td>
-                    <td class="p-2">
+                    <td class="p-2 align-top">
+                        <input type="number" name="items[${currentIndex}][harga_satuan]" class="w-40 border-gray-300 rounded-md shadow-sm" required min="0" value="${itemData?.harga_satuan || ''}">
+                        ${generateErrorHtml(`items.${currentIndex}.harga_satuan`)}
+                    </td>
+                    <td class="p-2 align-top">
+                        <input type="text" name="items[${currentIndex}][link_referensi]" placeholder="https://..." class="w-full border-gray-300 rounded-md shadow-sm" value="${itemData?.link_referensi || ''}">
+                        ${generateErrorHtml(`items.${currentIndex}.link_referensi`)}
+                    </td>
+                    <td class="p-2 align-top">
                         <button type="button" class="remove-item-btn text-red-500 hover:text-red-700">Hapus</button>
                     </td>
                 `;
                 container.appendChild(newRow);
-                itemIndex++;
+
+                // Inisialisasi Select2
+                $(`select[name="items[${currentIndex}][id_bahan]"]`).select2({
+                    placeholder: "Cari bahan...",
+                    width: 'resolve'
+                });
+
+                if (index === null) {
+                    itemIndex++;
+                }
             }
 
-            // Tambah baris pertama saat halaman dimuat
-            addItemRow();
+            // Fungsi untuk membuat HTML pesan error
+            function generateErrorHtml(field) {
+                if (errors && errors[field]) {
+                    return `<div class="text-sm text-red-600 mt-1">${errors[field][0]}</div>`;
+                }
+                return '';
+            }
 
-            // Event listener untuk tombol tambah
-            addItemBtn.addEventListener('click', addItemRow);
+            // Jika ada data input lama, render ulang barisnya
+            if (oldItems.length > 0) {
+                oldItems.forEach((item, index) => {
+                    addItemRow(item, index);
+                });
+                itemIndex = oldItems.length;
+            } else {
+                // Jika tidak, tambahkan satu baris kosong
+                addItemRow();
+            }
 
-            // Event listener untuk tombol hapus (menggunakan event delegation)
+            addItemBtn.addEventListener('click', () => addItemRow());
+
             container.addEventListener('click', function (e) {
                 if (e.target && e.target.classList.contains('remove-item-btn')) {
+                    $(e.target).closest('tr').find('.select2-bahan').select2('destroy');
                     e.target.closest('tr').remove();
                 }
             });
         });
     </script>
+
+    <style>
+        .select2-container {
+            width: 100% !important; /* Pastikan Select2 mengambil lebar penuh dari parent TD */
+        }
+        /* Jika ada masalah dengan tinggi input Select2, Anda bisa menambahkan ini */
+        .select2-container .select2-selection--single {
+            height: 38px; /* Sesuaikan dengan tinggi input default Tailwind */
+            border-radius: 0.375rem; /* rounded-md */
+            border-color: #d1d5db; /* border-gray-300 */
+        }
+        .select2-container .select2-selection--single .select2-selection__rendered {
+            line-height: 38px;
+        }
+        .select2-container .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+    </style>
     @endpush
 </x-app-layout>

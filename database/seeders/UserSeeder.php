@@ -19,24 +19,37 @@ class UserSeeder extends Seeder
         // Hapus data user lama (opsional dan hati-hati)
         // User::truncate();
 
-        // 1. Buat User Superadmin
+        
+        User::updateOrCreate(
+            ['email' => 'admin@ftmm.unair.ac.id'], // Kriteria unik untuk mencari
+            [
+                'name' => 'Super Admin',
+                'password' => Hash::make('un41r@fTMm'),
+                'role' => 'superadmin',
+                'id_program_studi' => null,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // 2. Buat User Fakultas
+        User::updateOrCreate(
+            ['email' => 'fakultas@example.com'], // Kriteria unik
+            [
+                'name' => 'Fakultas',
+                'password' => Hash::make('password'),
+                'role' => 'fakultas',
+                'id_program_studi' => null,
+                'email_verified_at' => now(),
+            ]
+        );
+
         User::create([
-            'name' => 'Super Admin',
-            'email' => 'superadmin@example.com',
-            'password' => Hash::make('password'), // Ganti dengan password yang kuat
+            'name' => 'Kabag TU',
+            'email' => 'kabag@ftmm.unair.ac.id',
+            'password' => Hash::make('un41r@fTMm'), // Ganti dengan password yang kuat
             'role' => 'superadmin',
             'id_program_studi' => null, // Superadmin tidak terikat prodi tertentu
             'email_verified_at' => now(), // Anggap email sudah terverifikasi
-        ]);
-
-        // 2. Buat User Fakultas (opsional, untuk contoh)
-        User::create([
-            'name' => 'Fakultas',
-            'email' => 'fakultas@example.com',
-            'password' => Hash::make('password'), // Ganti dengan password yang kuat
-            'role' => 'fakultas',
-            'id_program_studi' => null, // Role fakultas juga tidak terikat prodi tertentu
-            'email_verified_at' => now(),
         ]);
 
         // Anda bisa menambahkan user lain sesuai kebutuhan

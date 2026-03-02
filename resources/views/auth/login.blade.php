@@ -38,10 +38,10 @@
 
 							<!-- Email -->
 							<div class="form-group">
-								<label for="email">Email</label>
-								<input id="email" type="email"
-									class="form-control @error('email') is-invalid @enderror"
-									name="email" value="{{ old('email') }}" required autofocus tabindex="1">
+								<label for="email">Email atau NIP</label>
+								<input id="email" type="text"
+									class="form-control @error('login') is-invalid @enderror"
+									name="login" value="{{ old('login') }}" required autofocus tabindex="1">
 								@error('email')
 									<span class="invalid-feedback" role="alert">
 										<strong>{{ $message }}</strong>

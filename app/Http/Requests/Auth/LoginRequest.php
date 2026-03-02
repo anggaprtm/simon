@@ -27,7 +27,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'login' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -41,11 +41,24 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        // 1. Ambil input dari form 'login'
+        $login = $this->input('login');
+
+        // 2. Tentukan apakah inputnya adalah email atau NIP
+        $loginType = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'nik';
+
+        // 3. Siapkan kredensial berdasarkan tipe login
+        $credentials = [
+            $loginType => $login,
+            'password' => $this->input('password'),
+        ];
+
+        // 4. Coba lakukan autentikasi
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'login' => trans('auth.failed'), // Tampilkan error di field 'login'
             ]);
         }
 

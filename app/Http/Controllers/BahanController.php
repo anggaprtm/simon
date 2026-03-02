@@ -86,10 +86,10 @@ class BahanController extends Controller
                          ->orWhere('id_program_studi', $user->id_program_studi)
                          ->orderBy('nama_gudang')
                          ->get();
-
+        $bahan = new Bahan();
         $satuans = Satuan::orderBy('nama_satuan')->get();
 
-        return view('bahan.create', compact('gudangs', 'satuans'));
+        return view('bahan.create', compact('gudangs', 'satuans', 'bahan'));
     }
 
     public function store(Request $request)

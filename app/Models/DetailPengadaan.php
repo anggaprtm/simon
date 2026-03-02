@@ -23,9 +23,9 @@ class DetailPengadaan extends Model
         return $this->belongsTo(PengajuanPengadaan::class, 'id_pengajuan_pengadaan');
     }
 
-    public function masterBarang()
+    public function bahan()
     {
-        return $this->belongsTo(MasterBarang::class, 'id_master_barang');
+        return $this->belongsTo(Bahan::class, 'id_bahan');
     }
 
     public function satuan()

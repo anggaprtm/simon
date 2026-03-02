@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\PengajuanPengadaan;
 use App\Models\DetailPengadaan;
-use App\Models\MasterBarang;
+// use App\Models\MasterBarang;
+use App\Models\Bahan;
 use App\Models\Satuan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -41,9 +42,17 @@ class PengajuanPengadaanController extends Controller
     public function create()
     {
         $this->authorize('create-pengajuan');
-        $masterBarangs = MasterBarang::orderBy('nama_barang')->get();
+        $user = Auth::user();
+
+        // Ambil data Bahan berdasarkan program studi user yang login
+        $bahans = Bahan::where('id_program_studi', $user->id_program_studi)
+                       ->orderBy('nama_bahan')
+                       ->get();
+        
         $satuans = Satuan::orderBy('nama_satuan')->get();
-        return view('pengajuan-pengadaan.create', compact('masterBarangs', 'satuans'));
+        
+        // Kirim data $bahans ke view, bukan lagi $masterBarangs
+        return view('pengajuan-pengadaan.create', compact('bahans', 'satuans'));
     }
 
     public function store(Request $request)
@@ -51,10 +60,11 @@ class PengajuanPengadaanController extends Controller
         $this->authorize('create-pengajuan');
         
         $request->validate([
-            'tahun_ajaran' => 'required|string|max:9', // cth: 2024/2025
+            'tahun_ajaran' => 'required|string|max:9',
             'semester' => 'required|in:Ganjil,Genap',
             'items' => 'required|array|min:1',
-            'items.*.id_master_barang' => 'required|exists:master_barangs,id',
+            // Validasi diubah ke id_bahan
+            'items.*.id_bahan' => 'required|exists:bahans,id', 
             'items.*.jumlah' => 'required|numeric|gt:0',
             'items.*.id_satuan' => 'required|exists:satuans,id',
             'items.*.harga_satuan' => 'required|integer|min:0',
@@ -77,13 +87,13 @@ class PengajuanPengadaanController extends Controller
 
                 foreach ($request->items as $item) {
                     $pengajuan->details()->create([
-                        'id_master_barang' => $item['id_master_barang'],
+                        // Disimpan sebagai id_bahan
+                        'id_bahan' => $item['id_bahan'], 
                         'spesifikasi' => $item['spesifikasi'],
                         'jumlah' => $item['jumlah'],
                         'id_satuan' => $item['id_satuan'],
                         'harga_satuan' => $item['harga_satuan'],
                         'link_referensi' => $item['link_referensi'],
-                        // Anda bisa menambahkan 'merk', 'volume', 'link_referensi' jika sudah ada di form
                     ]);
                 }
             });
@@ -174,34 +184,32 @@ class PengajuanPengadaanController extends Controller
 
     public function edit(PengajuanPengadaan $pengajuanPengadaan)
     {
-        // Otorisasi: Pastikan user yang login adalah pemilik dan statusnya Draft
         if (Auth::id() !== $pengajuanPengadaan->id_user || $pengajuanPengadaan->status !== 'Draft') {
             abort(403, 'AKSI TIDAK DIIZINKAN.');
         }
 
-        // Load relasi detail agar bisa diakses di view
         $pengajuanPengadaan->load('details');
-
-        // Ambil data untuk dropdown (sama seperti di method create)
-        $masterBarangs = MasterBarang::orderBy('nama_barang')->get();
+        
+        $user = Auth::user();
+        $bahans = Bahan::where('id_program_studi', $user->id_program_studi)
+                       ->orderBy('nama_bahan')
+                       ->get();
         $satuans = Satuan::orderBy('nama_satuan')->get();
 
-        return view('pengajuan-pengadaan.edit', compact('pengajuanPengadaan', 'masterBarangs', 'satuans'));
+        return view('pengajuan-pengadaan.edit', compact('pengajuanPengadaan', 'bahans', 'satuans'));
     }
 
     public function update(Request $request, PengajuanPengadaan $pengajuanPengadaan)
     {
-        // Otorisasi
         if (Auth::id() !== $pengajuanPengadaan->id_user || $pengajuanPengadaan->status !== 'Draft') {
             abort(403, 'AKSI TIDAK DIIZINKAN.');
         }
 
-        // Validasi (sama seperti store)
         $request->validate([
             'tahun_ajaran' => 'required|string|max:9',
             'semester' => 'required|in:Ganjil,Genap',
             'items' => 'required|array|min:1',
-            'items.*.id_master_barang' => 'required|exists:master_barangs,id',
+            'items.*.id_bahan' => 'required|exists:bahans,id',
             // ... validasi item lainnya ...
         ]);
 
@@ -209,25 +217,22 @@ class PengajuanPengadaanController extends Controller
             DB::transaction(function () use ($request, $pengajuanPengadaan) {
                 $status = $request->action === 'submit' ? 'Diajukan' : 'Draft';
 
-                // 1. Update data header pengajuan
                 $pengajuanPengadaan->update([
                     'tahun_ajaran' => $request->tahun_ajaran,
                     'semester' => $request->semester,
                     'status' => $status,
                 ]);
 
-                // 2. Hapus semua detail item yang lama
                 $pengajuanPengadaan->details()->delete();
 
-                // 3. Buat ulang detail item berdasarkan data form yang baru
                 foreach ($request->items as $item) {
                     $pengajuanPengadaan->details()->create([
-                        'id_master_barang' => $item['id_master_barang'],
+                        'id_bahan' => $item['id_bahan'],
                         'spesifikasi' => $item['spesifikasi'],
                         'jumlah' => $item['jumlah'],
                         'id_satuan' => $item['id_satuan'],
                         'harga_satuan' => $item['harga_satuan'],
-                        'link_referensi' => $item['link_referensi'] ?? null, // Link referensi opsional
+                        'link_referensi' => $item['link_referensi'] ?? null,
                     ]);
                 }
             });
