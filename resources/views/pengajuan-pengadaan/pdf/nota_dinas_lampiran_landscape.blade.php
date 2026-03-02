@@ -56,20 +56,20 @@
             @foreach ($pengajuan->details as $detail)
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
-                    <td>{{ $detail->masterBarang->nama_barang }}</td>
+                    <td>{{ $detail->display_nama_barang }}</td>
                     <td>{{ $detail->merk }}</td>
                     <td>{{ $detail->spesifikasi }}</td>
                     <td class="text-center">{{ $detail->jumlah }}</td>
-                    <td class="text-center">{{ $detail->jumlah }} {{ $detail->satuan->nama_satuan }}</td>
+                    <td class="text-center">{{ ($detail->approved_jumlah ?? $detail->jumlah) }} {{ $detail->satuan->nama_satuan }}</td>
                     <td class="text-right">Rp{{ number_format($detail->harga_satuan, 0, ',', '.') }}</td>
-                    <td class="text-right">Rp{{ number_format($detail->jumlah * $detail->harga_satuan, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp{{ number_format(($detail->approved_jumlah ?? $detail->jumlah) * $detail->harga_satuan, 0, ',', '.') }}</td>
                     <td class="wrap">
                         <a href="{{ $detail->link_referensi }}" style="color: blue; text-decoration: underline;">
                             {{ $detail->link_referensi }}
                         </a>
                     </td>
                 </tr>
-                @php $totalKeseluruhan += ($detail->jumlah * $detail->harga_satuan); @endphp
+                @php $totalKeseluruhan += (($detail->approved_jumlah ?? $detail->jumlah) * $detail->harga_satuan); @endphp
             @endforeach
             <tr>
                 <td colspan="7" class="text-right text-bold">TOTAL KESELURUHAN</td>
