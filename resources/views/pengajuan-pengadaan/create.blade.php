@@ -6,12 +6,11 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <form action="{{ route('pengajuan-pengadaan.store') }}" method="POST">
                         @csrf
-                        {{-- Bagian Header Pengajuan --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <div>
                                 <x-input-label for="tahun_ajaran" :value="__('Tahun Ajaran')" />
@@ -28,38 +27,35 @@
                             </div>
                         </div>
 
-                        {{-- Bagian Detail Item --}}
-                        <h3 class="text-lg font-semibold border-t pt-4 mb-4">Detail Barang</h3>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full" id="items-table">
+                        <h3 class="text-lg font-semibold border-t pt-4 mb-2">Detail Barang</h3>
+                        <p class="text-sm text-gray-600 mb-4">Ketik untuk mencari bahan existing atau ketik nama bahan baru. Existing akan menampilkan stok saat ini.</p>
+
+                        <div class="overflow-x-auto pb-2">
+                            <table class="min-w-[1450px]" id="items-table">
                                 <thead>
                                     <tr>
-                                        <th class="w-1/4 px-2 py-2 text-left">Nama Barang</th>
+                                        <th class="px-2 py-2 text-left">Bahan (existing / baru)</th>
+                                        <th class="px-2 py-2 text-left">Info Stok</th>
                                         <th class="px-2 py-2 text-left">Spesifikasi</th>
-                                        <th class="px-2 py-2 text-left">Jumlah</th>
+                                        <th class="px-2 py-2 text-left">Jumlah Diajukan</th>
                                         <th class="px-2 py-2 text-left">Satuan</th>
                                         <th class="px-2 py-2 text-left">Harga Satuan (Rp)</th>
                                         <th class="px-2 py-2 text-left">Link Referensi</th>
                                         <th class="px-2 py-2 text-left">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody id="items-container">
-                                    {{-- Baris item akan ditambahkan di sini oleh JavaScript --}}
-                                </tbody>
+                                <tbody id="items-container"></tbody>
                             </table>
                         </div>
+
                         <button type="button" id="add-item-btn" class="mt-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded">
                             + Tambah Barang
                         </button>
-                        
+
                         <div class="flex items-center justify-end mt-6 border-t pt-6">
                             <a href="{{ route('pengajuan-pengadaan.index') }}" class="text-sm text-gray-600 hover:text-gray-900 mr-4 underline">Batal</a>
-                            <x-primary-button name="action" value="draft">
-                                {{ __('Simpan sebagai Draft') }}
-                            </x-primary-button>
-                            <x-primary-button name="action" value="submit" class="ml-2 bg-green-600 hover:bg-green-700">
-                                {{ __('Ajukan Sekarang') }}
-                            </x-primary-button>
+                            <x-primary-button name="action" value="draft">{{ __('Simpan sebagai Draft') }}</x-primary-button>
+                            <x-primary-button name="action" value="submit" class="ml-2 bg-green-600 hover:bg-green-700">{{ __('Ajukan Sekarang') }}</x-primary-button>
                         </div>
                     </form>
                 </div>
@@ -72,122 +68,93 @@
         document.addEventListener('DOMContentLoaded', function () {
             const container = document.getElementById('items-container');
             const addItemBtn = document.getElementById('add-item-btn');
+            const bahanList = @json($bahanOptions);
+            const satuans = @json($satuans);
+            const oldItems = @json(old('items', []));
             let itemIndex = 0;
 
-            // Ambil data input lama dan error dari session Laravel
-            const oldItems = @json(old('items')) || [];
-            const errors = @json($errors->getMessages());
+            function satuanOptions(selectedId = '') {
+                return satuans.map(s => `<option value="${s.id}" ${String(selectedId)===String(s.id)?'selected':''}>${s.nama_satuan}</option>`).join('');
+            }
 
-            function addItemRow(itemData = null, index = null) {
-                const currentIndex = index !== null ? index : itemIndex;
+            function createRow(item = null) {
+                const idx = itemIndex++;
+                const row = document.createElement('tr');
+                row.classList.add('border-t');
 
-                const newRow = document.createElement('tr');
-                newRow.classList.add('border-t');
-                
-                // Cek apakah ada error untuk baris ini
-                const hasError = errors && errors[`items.${currentIndex}.id_bahan`];
-
-                newRow.innerHTML = `
+                row.innerHTML = `
                     <td class="p-2 align-top">
-                        <select name="items[${currentIndex}][id_bahan]" class="select2-bahan w-full" required>
-                            <option value="">Cari dan Pilih Bahan...</option>
-                            @foreach($bahans as $bahan)
-                                <option value="{{ $bahan->id }}" ${itemData && itemData.id_bahan == {{ $bahan->id }} ? 'selected' : ''}>
-                                    {!! $bahan->nama_bahan !!}
-                                </option>
-                            @endforeach
+                        <select name="items[${idx}][item_ref]" class="item-ref select2-bahan w-full" required>
+                            <option value="">Ketik / pilih bahan...</option>
+                            ${bahanList.map(b => `<option value="${b.id}" data-stock="${b.stock}" data-satuan="${b.satuan}">${b.text}</option>`).join('')}
                         </select>
-                        ${generateErrorHtml(`items.${currentIndex}.id_bahan`)}
+                        <p class="text-xs mt-1 item-type text-blue-600">Pilih bahan existing atau ketik bahan baru.</p>
                     </td>
-                    <td class="p-2 align-top">
-                        <input type="text" name="items[${currentIndex}][spesifikasi]" class="w-full border-gray-300 rounded-md shadow-sm" value="${itemData?.spesifikasi || ''}">
-                        ${generateErrorHtml(`items.${currentIndex}.spesifikasi`)}
-                    </td>
-                    <td class="p-2 align-top">
-                        <input type="number" name="items[${currentIndex}][jumlah]" class="w-24 border-gray-300 rounded-md shadow-sm" step="any" required min="0.001" value="${itemData?.jumlah || ''}">
-                        ${generateErrorHtml(`items.${currentIndex}.jumlah`)}
-                    </td>
-                    <td class="p-2 align-top">
-                        <select name="items[${currentIndex}][id_satuan]" class="w-24 border-gray-300 rounded-md shadow-sm" required>
-                            @foreach($satuans as $satuan)
-                                <option value="{{ $satuan->id }}" ${itemData && itemData.id_satuan == {{ $satuan->id }} ? 'selected' : ''}>
-                                    {{ $satuan->nama_satuan }}
-                                </option>
-                            @endforeach
-                        </select>
-                        ${generateErrorHtml(`items.${currentIndex}.id_satuan`)}
-                    </td>
-                    <td class="p-2 align-top">
-                        <input type="number" name="items[${currentIndex}][harga_satuan]" class="w-40 border-gray-300 rounded-md shadow-sm" required min="0" value="${itemData?.harga_satuan || ''}">
-                        ${generateErrorHtml(`items.${currentIndex}.harga_satuan`)}
-                    </td>
-                    <td class="p-2 align-top">
-                        <input type="text" name="items[${currentIndex}][link_referensi]" placeholder="https://..." class="w-full border-gray-300 rounded-md shadow-sm" value="${itemData?.link_referensi || ''}">
-                        ${generateErrorHtml(`items.${currentIndex}.link_referensi`)}
-                    </td>
-                    <td class="p-2 align-top">
-                        <button type="button" class="remove-item-btn text-red-500 hover:text-red-700">Hapus</button>
-                    </td>
+                    <td class="p-2 align-top text-sm item-stock text-gray-600">-</td>
+                    <td class="p-2 align-top"><input type="text" name="items[${idx}][spesifikasi]" class="w-full border-gray-300 rounded-md shadow-sm" value="${item?.spesifikasi ?? ''}"></td>
+                    <td class="p-2 align-top"><input type="number" step="any" min="0.001" name="items[${idx}][jumlah]" class="w-full min-w-[160px] border-gray-300 rounded-md shadow-sm" value="${item?.jumlah ?? ''}" required></td>
+                    <td class="p-2 align-top"><select name="items[${idx}][id_satuan]" class="w-full border-gray-300 rounded-md shadow-sm" required>${satuanOptions(item?.id_satuan)}</select></td>
+                    <td class="p-2 align-top"><input type="number" min="0" name="items[${idx}][harga_satuan]" class="w-full min-w-[170px] border-gray-300 rounded-md shadow-sm" value="${item?.harga_satuan ?? ''}" required></td>
+                    <td class="p-2 align-top"><input type="url" name="items[${idx}][link_referensi]" class="w-full min-w-[220px] border-gray-300 rounded-md shadow-sm" value="${item?.link_referensi ?? ''}"></td>
+                    <td class="p-2 align-top"><button type="button" class="remove-item-btn text-red-600 hover:underline">Hapus</button></td>
                 `;
-                container.appendChild(newRow);
 
-                // Inisialisasi Select2
-                $(`select[name="items[${currentIndex}][id_bahan]"]`).select2({
-                    placeholder: "Cari bahan...",
-                    width: 'resolve'
+                container.appendChild(row);
+                const select = row.querySelector('.item-ref');
+                $(select).select2({
+                    data: [{id:'', text:'Ketik / pilih bahan...'}, ...bahanList.map(b => ({id: String(b.id), text: b.text}))],
+                    tags: true,
+                    placeholder: 'Ketik / pilih bahan...',
+                    width: '100%'
                 });
 
-                if (index === null) {
-                    itemIndex++;
+                if (item?.item_ref) {
+                    const optionExists = Array.from(select.options).some(opt => opt.value === String(item.item_ref));
+                    if (!optionExists) {
+                        const newOption = new Option(item.item_ref, item.item_ref, true, true);
+                        select.add(newOption);
+                    }
+                    $(select).val(String(item.item_ref)).trigger('change');
                 }
-            }
 
-            // Fungsi untuk membuat HTML pesan error
-            function generateErrorHtml(field) {
-                if (errors && errors[field]) {
-                    return `<div class="text-sm text-red-600 mt-1">${errors[field][0]}</div>`;
-                }
-                return '';
-            }
-
-            // Jika ada data input lama, render ulang barisnya
-            if (oldItems.length > 0) {
-                oldItems.forEach((item, index) => {
-                    addItemRow(item, index);
+                $(select).on('change', function () {
+                    const selected = bahanList.find(b => String(b.id) === String(this.value));
+                    const stockCell = row.querySelector('.item-stock');
+                    const typeCell = row.querySelector('.item-type');
+                    if (selected) {
+                        stockCell.textContent = `Stok saat ini: ${selected.stock_text ?? (selected.stock + ' ' + selected.satuan)}`;
+                        typeCell.textContent = 'Bahan existing';
+                        typeCell.className = 'text-xs mt-1 item-type text-green-600';
+                    } else if (this.value) {
+                        stockCell.textContent = 'Pengajuan bahan baru (belum ada di master bahan).';
+                        typeCell.textContent = 'Bahan baru';
+                        typeCell.className = 'text-xs mt-1 item-type text-amber-600';
+                    } else {
+                        stockCell.textContent = '-';
+                        typeCell.textContent = 'Pilih bahan existing atau ketik bahan baru.';
+                        typeCell.className = 'text-xs mt-1 item-type text-blue-600';
+                    }
                 });
-                itemIndex = oldItems.length;
+
+                $(select).trigger('change');
+            }
+
+            if (oldItems.length) {
+                oldItems.forEach(item => createRow(item));
             } else {
-                // Jika tidak, tambahkan satu baris kosong
-                addItemRow();
+                createRow();
             }
 
-            addItemBtn.addEventListener('click', () => addItemRow());
+            addItemBtn.addEventListener('click', () => createRow());
 
             container.addEventListener('click', function (e) {
-                if (e.target && e.target.classList.contains('remove-item-btn')) {
-                    $(e.target).closest('tr').find('.select2-bahan').select2('destroy');
-                    e.target.closest('tr').remove();
+                if (e.target.classList.contains('remove-item-btn')) {
+                    const row = e.target.closest('tr');
+                    $(row.querySelector('.item-ref')).select2('destroy');
+                    row.remove();
                 }
             });
         });
     </script>
-
-    <style>
-        .select2-container {
-            width: 100% !important; /* Pastikan Select2 mengambil lebar penuh dari parent TD */
-        }
-        /* Jika ada masalah dengan tinggi input Select2, Anda bisa menambahkan ini */
-        .select2-container .select2-selection--single {
-            height: 38px; /* Sesuaikan dengan tinggi input default Tailwind */
-            border-radius: 0.375rem; /* rounded-md */
-            border-color: #d1d5db; /* border-gray-300 */
-        }
-        .select2-container .select2-selection--single .select2-selection__rendered {
-            line-height: 38px;
-        }
-        .select2-container .select2-selection--single .select2-selection__arrow {
-            height: 36px;
-        }
-    </style>
     @endpush
 </x-app-layout>

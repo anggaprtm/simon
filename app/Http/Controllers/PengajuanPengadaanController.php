@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PengajuanPengadaan;
-use App\Models\DetailPengadaan;
-// use App\Models\MasterBarang;
 use App\Models\Bahan;
+use App\Models\PengajuanPengadaan;
 use App\Models\Satuan;
+use App\Models\DetailPengadaan;
+use App\Models\Gudang;
+use App\Models\PeriodeStok;
+use App\Models\Transaksi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use PDF;
 use setasign\Fpdi\Fpdi;
 use setasign\Fpdi\PdfParser\StreamReader;
 
@@ -19,7 +20,6 @@ class PengajuanPengadaanController extends Controller
 {
     public function __construct()
     {
-        // Definisikan Gate untuk hak akses
         Gate::define('create-pengajuan', function ($user) {
             return $user->role === 'laboran';
         });
@@ -33,7 +33,6 @@ class PengajuanPengadaanController extends Controller
         if ($user->role === 'laboran') {
             $query->where('id_user', $user->id);
         }
-        // Jika superadmin/fakultas, bisa melihat semua (bisa ditambahkan filter prodi nanti)
 
         $pengajuans = $query->get();
         return view('pengajuan-pengadaan.index', compact('pengajuans'));
@@ -44,33 +43,29 @@ class PengajuanPengadaanController extends Controller
         $this->authorize('create-pengajuan');
         $user = Auth::user();
 
-        // Ambil data Bahan berdasarkan program studi user yang login
         $bahans = Bahan::where('id_program_studi', $user->id_program_studi)
-                       ->orderBy('nama_bahan')
-                       ->get();
-        
+            ->with('satuanRel:id,nama_satuan')
+            ->orderBy('nama_bahan')
+            ->get();
+
         $satuans = Satuan::orderBy('nama_satuan')->get();
-        
-        // Kirim data $bahans ke view, bukan lagi $masterBarangs
-        return view('pengajuan-pengadaan.create', compact('bahans', 'satuans'));
+        $bahanOptions = $bahans->map(function ($b) {
+            return [
+                'id' => $b->id,
+                'text' => $b->nama_bahan,
+                'stock' => $b->jumlah_stock,
+                'stock_text' => $b->formatted_stock,
+                'satuan' => $b->satuanRel->nama_satuan ?? '-',
+            ];
+        })->values();
+
+        return view('pengajuan-pengadaan.create', compact('bahans', 'satuans', 'bahanOptions'));
     }
 
     public function store(Request $request)
     {
         $this->authorize('create-pengajuan');
-        
-        $request->validate([
-            'tahun_ajaran' => 'required|string|max:9',
-            'semester' => 'required|in:Ganjil,Genap',
-            'items' => 'required|array|min:1',
-            // Validasi diubah ke id_bahan
-            'items.*.id_bahan' => 'required|exists:bahans,id', 
-            'items.*.jumlah' => 'required|numeric|gt:0',
-            'items.*.id_satuan' => 'required|exists:satuans,id',
-            'items.*.harga_satuan' => 'required|integer|min:0',
-            'items.*.spesifikasi' => 'nullable|string',
-            'items.*.link_referensi' => 'nullable|url|max:2048',
-        ]);
+        $this->validatePengajuan($request);
 
         try {
             DB::transaction(function () use ($request) {
@@ -85,17 +80,7 @@ class PengajuanPengadaanController extends Controller
                     'status' => $status,
                 ]);
 
-                foreach ($request->items as $item) {
-                    $pengajuan->details()->create([
-                        // Disimpan sebagai id_bahan
-                        'id_bahan' => $item['id_bahan'], 
-                        'spesifikasi' => $item['spesifikasi'],
-                        'jumlah' => $item['jumlah'],
-                        'id_satuan' => $item['id_satuan'],
-                        'harga_satuan' => $item['harga_satuan'],
-                        'link_referensi' => $item['link_referensi'],
-                    ]);
-                }
+                $this->persistItems($pengajuan, $request->items, $user->id_program_studi);
             });
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal menyimpan pengajuan: ' . $e->getMessage())->withInput();
@@ -106,44 +91,47 @@ class PengajuanPengadaanController extends Controller
 
     public function show(PengajuanPengadaan $pengajuanPengadaan)
     {
-        // Tambahkan otorisasi untuk melihat
-        // Gate::authorize('view', $pengajuanPengadaan);
-        $pengajuanPengadaan->load(['user', 'programStudi', 'details.masterBarang', 'details.satuan']);
+        $pengajuanPengadaan->load(['user', 'programStudi', 'details.bahan.satuanRel', 'details.satuan']);
         return view('pengajuan-pengadaan.show', compact('pengajuanPengadaan'));
     }
 
     public function cetakNotaDinas(PengajuanPengadaan $pengajuanPengadaan)
     {
-        // 1) Load relasi
-        $pengajuanPengadaan->load(['user', 'programStudi', 'details.masterBarang', 'details.satuan']);
+        $pengajuanPengadaan->load(['user', 'programStudi', 'details.bahan', 'details.satuan']);
 
-        // 2) Hitung jumlah lampiran (teks)
-        $itemsPerPage = 20; // estimasi per halaman, opsional
+        $itemsPerPage = 20;
         $jumlah_lampiran_angka = (int) ceil(count($pengajuanPengadaan->details) / $itemsPerPage);
-        $formatter = new \NumberFormatter('id', \NumberFormatter::SPELLOUT);
-        $jumlah_lampiran = ucwords($formatter->format(max(1, $jumlah_lampiran_angka)));
 
-        // 3) Logo base64
+        if (class_exists('NumberFormatter')) {
+            $formatter = new \NumberFormatter('id', \NumberFormatter::SPELLOUT);
+            $jumlah_lampiran = ucwords($formatter->format(max(1, $jumlah_lampiran_angka)));
+        } else {
+            $jumlah_lampiran = (string) max(1, $jumlah_lampiran_angka);
+        }
+
         $logo_base64 = base64_encode(@file_get_contents(public_path('images/logo.png'))) ?: '';
 
-        // 4) Data untuk view
         $data = [
             'pengajuan'       => $pengajuanPengadaan,
             'jumlah_lampiran' => $jumlah_lampiran,
             'logo_base64'     => $logo_base64,
         ];
 
-        // 5) Render PDF portrait (halaman 1)
-        $pdfPortrait = Pdf::loadView('pengajuan-pengadaan.pdf.nota_dinas_portrait', $data)
-            ->setPaper('a4', 'portrait')
-            ->output();
+        try {
+            $pdfPortrait = app('dompdf.wrapper')
+                ->loadView('pengajuan-pengadaan.pdf.nota_dinas_portrait', $data)
+                ->setPaper('a4', 'portrait')
+                ->output();
 
-        // 6) Render PDF landscape (lampiran, multi halaman)
-        $pdfLandscape = Pdf::loadView('pengajuan-pengadaan.pdf.nota_dinas_lampiran_landscape', $data)
-            ->setPaper('a4', 'landscape')
-            ->output();
+            $pdfLandscape = app('dompdf.wrapper')
+                ->loadView('pengajuan-pengadaan.pdf.nota_dinas_lampiran_landscape', $data)
+                ->setPaper('a4', 'landscape')
+                ->output();
+        } catch (\Throwable $e) {
+            return redirect()->route('pengajuan-pengadaan.show', $pengajuanPengadaan)
+                ->with('error', 'Fitur cetak PDF belum tersedia/konfigurasi bermasalah: ' . $e->getMessage());
+        }
 
-        // 7) Merge keduanya pakai FPDI
         $final = new Fpdi();
 
         foreach ([$pdfPortrait, $pdfLandscape] as $pdfString) {
@@ -151,8 +139,6 @@ class PengajuanPengadaanController extends Controller
             for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
                 $tpl = $final->importPage($pageNo);
                 $size = $final->getTemplateSize($tpl);
-
-                // Tambah halaman dengan orientasi & ukuran sesuai template
                 $final->AddPage($size['orientation'], [$size['width'], $size['height']]);
                 $final->useTemplate($tpl);
             }
@@ -160,7 +146,6 @@ class PengajuanPengadaanController extends Controller
 
         $output = $final->Output('S');
 
-        // 8) Return 1 file PDF final (portrait + landscape)
         return response($output, 200)
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'inline; filename="nota-dinas-' . $pengajuanPengadaan->id . '.pdf"');
@@ -168,18 +153,13 @@ class PengajuanPengadaanController extends Controller
 
     public function destroy(PengajuanPengadaan $pengajuanPengadaan)
     {
-        // 1. Otorisasi: Pastikan user yang login adalah pemilik dan statusnya Draft
         if (Auth::id() !== $pengajuanPengadaan->id_user || $pengajuanPengadaan->status !== 'Draft') {
             abort(403, 'AKSI TIDAK DIIZINKAN.');
         }
 
-        // 2. Hapus data
-        // Karena ada onDelete('cascade') di migrasi, detailnya akan ikut terhapus.
         $pengajuanPengadaan->delete();
 
-        // 3. Redirect dengan pesan sukses
-        return redirect()->route('pengajuan-pengadaan.index')
-                        ->with('success', 'Pengajuan berhasil dihapus.');
+        return redirect()->route('pengajuan-pengadaan.index')->with('success', 'Pengajuan berhasil dihapus.');
     }
 
     public function edit(PengajuanPengadaan $pengajuanPengadaan)
@@ -189,14 +169,35 @@ class PengajuanPengadaanController extends Controller
         }
 
         $pengajuanPengadaan->load('details');
-        
+
         $user = Auth::user();
         $bahans = Bahan::where('id_program_studi', $user->id_program_studi)
-                       ->orderBy('nama_bahan')
-                       ->get();
+            ->with('satuanRel:id,nama_satuan')
+            ->orderBy('nama_bahan')
+            ->get();
         $satuans = Satuan::orderBy('nama_satuan')->get();
+        $bahanOptions = $bahans->map(function ($b) {
+            return [
+                'id' => $b->id,
+                'text' => $b->nama_bahan,
+                'stock' => $b->jumlah_stock,
+                'stock_text' => $b->formatted_stock,
+                'satuan' => $b->satuanRel->nama_satuan ?? '-',
+            ];
+        })->values();
 
-        return view('pengajuan-pengadaan.edit', compact('pengajuanPengadaan', 'bahans', 'satuans'));
+        $detailItemsForJs = $pengajuanPengadaan->details->map(function ($d) {
+            return [
+                'item_ref' => $d->id_bahan ?: $d->nama_barang_input,
+                'spesifikasi' => $d->spesifikasi,
+                'jumlah' => $d->jumlah,
+                'id_satuan' => $d->id_satuan,
+                'harga_satuan' => $d->harga_satuan,
+                'link_referensi' => $d->link_referensi,
+            ];
+        })->values();
+
+        return view('pengajuan-pengadaan.edit', compact('pengajuanPengadaan', 'bahans', 'satuans', 'bahanOptions', 'detailItemsForJs'));
     }
 
     public function update(Request $request, PengajuanPengadaan $pengajuanPengadaan)
@@ -205,13 +206,7 @@ class PengajuanPengadaanController extends Controller
             abort(403, 'AKSI TIDAK DIIZINKAN.');
         }
 
-        $request->validate([
-            'tahun_ajaran' => 'required|string|max:9',
-            'semester' => 'required|in:Ganjil,Genap',
-            'items' => 'required|array|min:1',
-            'items.*.id_bahan' => 'required|exists:bahans,id',
-            // ... validasi item lainnya ...
-        ]);
+        $this->validatePengajuan($request);
 
         try {
             DB::transaction(function () use ($request, $pengajuanPengadaan) {
@@ -224,17 +219,7 @@ class PengajuanPengadaanController extends Controller
                 ]);
 
                 $pengajuanPengadaan->details()->delete();
-
-                foreach ($request->items as $item) {
-                    $pengajuanPengadaan->details()->create([
-                        'id_bahan' => $item['id_bahan'],
-                        'spesifikasi' => $item['spesifikasi'],
-                        'jumlah' => $item['jumlah'],
-                        'id_satuan' => $item['id_satuan'],
-                        'harga_satuan' => $item['harga_satuan'],
-                        'link_referensi' => $item['link_referensi'] ?? null,
-                    ]);
-                }
+                $this->persistItems($pengajuanPengadaan, $request->items, $pengajuanPengadaan->id_program_studi);
             });
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal memperbarui pengajuan: ' . $e->getMessage())->withInput();
@@ -243,42 +228,288 @@ class PengajuanPengadaanController extends Controller
         return redirect()->route('pengajuan-pengadaan.index')->with('success', 'Pengajuan berhasil diperbarui.');
     }
 
-    public function setujui(PengajuanPengadaan $pengajuanPengadaan)
+
+    public function ajukanFinal(PengajuanPengadaan $pengajuanPengadaan)
     {
-        // 1. Otorisasi menggunakan Gate yang sudah dibuat
+        if (Auth::id() !== $pengajuanPengadaan->id_user || $pengajuanPengadaan->status !== 'Draft') {
+            abort(403, 'AKSI TIDAK DIIZINKAN.');
+        }
+
+        if (! $pengajuanPengadaan->details()->exists()) {
+            return redirect()->route('pengajuan-pengadaan.show', $pengajuanPengadaan)
+                ->with('error', 'Pengajuan tidak bisa diajukan karena belum memiliki item.');
+        }
+
+        DB::transaction(function () use ($pengajuanPengadaan) {
+            $pengajuanPengadaan->update(['status' => 'Diajukan']);
+            $pengajuanPengadaan->details()->update([
+                'status_item' => 'diajukan',
+                'approved_jumlah' => DB::raw('jumlah'),
+                'catatan_revisi' => null,
+            ]);
+        });
+
+        return redirect()->route('pengajuan-pengadaan.show', $pengajuanPengadaan)
+            ->with('success', 'Pengajuan berhasil diajukan dan siap direview Fakultas.');
+    }
+
+    public function realisasiForm(PengajuanPengadaan $pengajuanPengadaan)
+    {
+        if (Auth::id() !== $pengajuanPengadaan->id_user || ! in_array($pengajuanPengadaan->status, ['Disetujui', 'Selesai'])) {
+            abort(403, 'AKSI TIDAK DIIZINKAN.');
+        }
+
+        $pengajuanPengadaan->load(['details.bahan.satuanRel', 'details.satuan']);
+        $gudangs = Gudang::whereNull('id_program_studi')
+            ->orWhere('id_program_studi', Auth::user()->id_program_studi)
+            ->orderBy('nama_gudang')
+            ->get();
+        $satuans = Satuan::orderBy('nama_satuan')->get();
+
+        return view('pengajuan-pengadaan.realisasi', compact('pengajuanPengadaan', 'gudangs', 'satuans'));
+    }
+
+    public function realisasiItem(Request $request, PengajuanPengadaan $pengajuanPengadaan, DetailPengadaan $detailPengadaan)
+    {
+        if (Auth::id() !== $pengajuanPengadaan->id_user || $pengajuanPengadaan->status !== 'Disetujui') {
+            abort(403, 'AKSI TIDAK DIIZINKAN.');
+        }
+
+        if ($detailPengadaan->id_pengajuan_pengadaan !== $pengajuanPengadaan->id) {
+            abort(404);
+        }
+
+        if (! in_array($detailPengadaan->status_item, ['disetujui', 'disetujui_sebagian'])) {
+            return redirect()->back()->with('error', 'Item ini tidak dalam status disetujui.');
+        }
+
+        if ($detailPengadaan->is_direalisasi) {
+            return redirect()->back()->with('error', 'Item ini sudah pernah direalisasikan.');
+        }
+
+        DB::transaction(function () use ($request, $detailPengadaan, $pengajuanPengadaan) {
+            if (!is_null($detailPengadaan->id_bahan)) {
+                $bahan = Bahan::where('id', $detailPengadaan->id_bahan)->lockForUpdate()->firstOrFail();
+                $konversi = 1;
+
+                if ((int) $detailPengadaan->id_satuan !== (int) $bahan->id_satuan) {
+                    $request->validate(['konversi_nilai' => 'required|numeric|gt:0']);
+                    $konversi = (float) $request->konversi_nilai;
+                }
+
+                $jumlahMasuk = (float) $detailPengadaan->approved_jumlah * $konversi;
+
+                $stokSebelum = (float) $bahan->jumlah_stock;
+                $stokSesudah = $stokSebelum + $jumlahMasuk;
+
+                Transaksi::create([
+                    'id_bahan' => $bahan->id,
+                    'id_user' => Auth::id(),
+                    'jenis_transaksi' => 'masuk',
+                    'jumlah' => $jumlahMasuk,
+                    'stock_sebelum' => $stokSebelum,
+                    'stock_sesudah' => $stokSesudah,
+                    'tanggal_transaksi' => now(),
+                    'keterangan' => 'Realisasi pengadaan #' . $pengajuanPengadaan->id . ' item #' . $detailPengadaan->id,
+                ]);
+
+                $bahan->update(['jumlah_stock' => $stokSesudah]);
+
+                $detailPengadaan->update([
+                    'is_direalisasi' => true,
+                    'realisasi_qty' => $jumlahMasuk,
+                    'konversi_nilai' => $konversi,
+                ]);
+            } else {
+                $request->validate([
+                    'nama_bahan_baru' => 'required|string|max:255',
+                    'id_gudang' => 'required|exists:gudangs,id',
+                    'id_satuan_baru' => 'required|exists:satuans,id',
+                    'qty_realisasi' => 'required|numeric|gt:0',
+                    'merk_baru' => 'nullable|string|max:255',
+                    'jenis_bahan_baru' => 'nullable|string|max:100',
+                    'minimum_stock_baru' => 'nullable|numeric|min:0',
+                ]);
+
+                $kode = 'AUTO-' . $pengajuanPengadaan->id . '-' . $detailPengadaan->id;
+                $bahanBaru = Bahan::create([
+                    'kode_bahan' => $kode,
+                    'nama_bahan' => $request->nama_bahan_baru,
+                    'merk' => $request->merk_baru,
+                    'jenis_bahan' => $request->jenis_bahan_baru,
+                    'format_kimia' => false,
+                    'id_program_studi' => Auth::user()->id_program_studi,
+                    'id_gudang' => $request->id_gudang,
+                    'id_satuan' => $request->id_satuan_baru,
+                    'minimum_stock' => $request->minimum_stock_baru ?? 0,
+                    'jumlah_stock' => 0,
+                ]);
+
+                PeriodeStok::create([
+                    'id_bahan' => $bahanBaru->id,
+                    'tahun_periode' => date('Y'),
+                    'stok_awal' => 0,
+                    'status' => 'aktif',
+                ]);
+
+                $jumlahMasuk = (float) $request->qty_realisasi;
+                Transaksi::create([
+                    'id_bahan' => $bahanBaru->id,
+                    'id_user' => Auth::id(),
+                    'jenis_transaksi' => 'masuk',
+                    'jumlah' => $jumlahMasuk,
+                    'stock_sebelum' => 0,
+                    'stock_sesudah' => $jumlahMasuk,
+                    'tanggal_transaksi' => now(),
+                    'keterangan' => 'Realisasi item baru pengadaan #' . $pengajuanPengadaan->id . ' item #' . $detailPengadaan->id,
+                ]);
+
+                $bahanBaru->update(['jumlah_stock' => $jumlahMasuk]);
+
+                $detailPengadaan->update([
+                    'id_bahan' => $bahanBaru->id,
+                    'is_direalisasi' => true,
+                    'realisasi_qty' => $jumlahMasuk,
+                    'konversi_nilai' => null,
+                ]);
+            }
+
+            $totalApproved = $pengajuanPengadaan->details()->whereIn('status_item', ['disetujui', 'disetujui_sebagian'])->count();
+            $totalRealized = $pengajuanPengadaan->details()->whereIn('status_item', ['disetujui', 'disetujui_sebagian'])->where('is_direalisasi', true)->count();
+            if ($totalApproved > 0 && $totalApproved === $totalRealized) {
+                $pengajuanPengadaan->update(['status' => 'Selesai']);
+            }
+        });
+
+        $pengajuanPengadaan->refresh();
+
+        if ($pengajuanPengadaan->status === 'Selesai') {
+            return redirect()->route('pengajuan-pengadaan.show', $pengajuanPengadaan)
+                ->with('success', 'Realisasi item berhasil diproses. Semua item approved sudah direalisasikan.');
+        }
+
+        return redirect()->route('pengajuan-pengadaan.realisasiForm', $pengajuanPengadaan)
+            ->with('success', 'Realisasi item berhasil diproses.');
+    }
+
+    public function setujui(Request $request, PengajuanPengadaan $pengajuanPengadaan)
+    {
         $this->authorize('manage-pengajuan');
 
-        // 2. Pastikan hanya pengajuan berstatus 'Diajukan' yang bisa diproses
         if ($pengajuanPengadaan->status !== 'Diajukan') {
             return redirect()->back()->with('error', 'Hanya pengajuan dengan status "Diajukan" yang dapat diproses.');
         }
 
-        // 3. Ubah status menjadi 'Disetujui'
-        $pengajuanPengadaan->update(['status' => 'Disetujui']);
+        $request->validate([
+            'approval_items' => 'required|array|min:1',
+            'approval_items.*.status_item' => 'required|in:disetujui,disetujui_sebagian,ditolak',
+            'approval_items.*.approved_jumlah' => 'nullable|numeric|min:0',
+            'approval_items.*.catatan_revisi' => 'nullable|string|max:500',
+        ]);
 
-        // 4. Redirect kembali dengan pesan sukses
+        DB::transaction(function () use ($request, $pengajuanPengadaan) {
+            $details = $pengajuanPengadaan->details()->get()->keyBy('id');
+
+            foreach ($request->approval_items as $detailId => $approvalItem) {
+                if (!isset($details[$detailId])) {
+                    continue;
+                }
+
+                $detail = $details[$detailId];
+                $statusItem = $approvalItem['status_item'];
+                $approvedJumlah = $approvalItem['approved_jumlah'] ?? null;
+
+                if ($statusItem === 'disetujui') {
+                    $approvedJumlah = $detail->jumlah;
+                }
+
+                if ($statusItem === 'ditolak') {
+                    $approvedJumlah = 0;
+                }
+
+                if ($statusItem === 'disetujui_sebagian' && ($approvedJumlah === null || $approvedJumlah > $detail->jumlah || $approvedJumlah <= 0)) {
+                    throw new \RuntimeException('Jumlah disetujui sebagian harus > 0 dan <= jumlah diajukan.');
+                }
+
+                $detail->update([
+                    'status_item' => $statusItem,
+                    'approved_jumlah' => $approvedJumlah,
+                    'catatan_revisi' => $approvalItem['catatan_revisi'] ?? null,
+                ]);
+            }
+
+            $hasApproved = $pengajuanPengadaan->details()->whereIn('status_item', ['disetujui', 'disetujui_sebagian'])->exists();
+            $pengajuanPengadaan->update(['status' => $hasApproved ? 'Disetujui' : 'Ditolak']);
+        });
+
         return redirect()->route('pengajuan-pengadaan.show', $pengajuanPengadaan)
-                         ->with('success', 'Pengajuan telah berhasil disetujui.');
+            ->with('success', 'Keputusan approval berhasil disimpan.');
     }
 
-    /**
-     * Menolak sebuah pengajuan.
-     */
     public function tolak(PengajuanPengadaan $pengajuanPengadaan)
     {
-        // 1. Otorisasi
         $this->authorize('manage-pengajuan');
 
-        // 2. Pastikan statusnya 'Diajukan'
         if ($pengajuanPengadaan->status !== 'Diajukan') {
             return redirect()->back()->with('error', 'Hanya pengajuan dengan status "Diajukan" yang dapat diproses.');
         }
 
-        // 3. Ubah status menjadi 'Ditolak'
-        $pengajuanPengadaan->update(['status' => 'Ditolak']);
+        DB::transaction(function () use ($pengajuanPengadaan) {
+            $pengajuanPengadaan->details()->update([
+                'status_item' => 'ditolak',
+                'approved_jumlah' => 0,
+                'catatan_revisi' => 'Ditolak pada level pengajuan.',
+            ]);
 
-        // 4. Redirect kembali dengan pesan sukses
+            $pengajuanPengadaan->update(['status' => 'Ditolak']);
+        });
+
         return redirect()->route('pengajuan-pengadaan.show', $pengajuanPengadaan)
-                         ->with('success', 'Pengajuan telah ditolak.');
+            ->with('success', 'Pengajuan telah ditolak.');
     }
+
+    private function validatePengajuan(Request $request): void
+    {
+        $request->validate([
+            'tahun_ajaran' => 'required|string|max:9',
+            'semester' => 'required|in:Ganjil,Genap',
+            'items' => 'required|array|min:1',
+            'items.*.item_ref' => 'required|string|max:255',
+            'items.*.jumlah' => 'required|numeric|gt:0',
+            'items.*.id_satuan' => 'required|exists:satuans,id',
+            'items.*.harga_satuan' => 'required|integer|min:0',
+            'items.*.spesifikasi' => 'nullable|string',
+            'items.*.link_referensi' => 'nullable|url|max:2048',
+        ]);
     }
+
+    private function persistItems(PengajuanPengadaan $pengajuan, array $items, int $prodiId): void
+    {
+        foreach ($items as $item) {
+            $itemRef = trim((string) ($item['item_ref'] ?? ''));
+            $idBahan = null;
+            $namaBarangInput = null;
+
+            if (ctype_digit($itemRef)) {
+                $bahan = Bahan::where('id', (int) $itemRef)
+                    ->where('id_program_studi', $prodiId)
+                    ->firstOrFail();
+                $idBahan = $bahan->id;
+            } else {
+                $namaBarangInput = $itemRef;
+            }
+
+            $pengajuan->details()->create([
+                'id_bahan' => $idBahan,
+                'nama_barang_input' => $namaBarangInput,
+                'spesifikasi' => $item['spesifikasi'] ?? null,
+                'jumlah' => $item['jumlah'],
+                'approved_jumlah' => $item['jumlah'],
+                'status_item' => 'diajukan',
+                'id_satuan' => $item['id_satuan'],
+                'harga_satuan' => $item['harga_satuan'],
+                'link_referensi' => $item['link_referensi'] ?? null,
+            ]);
+        }
+    }
+}
