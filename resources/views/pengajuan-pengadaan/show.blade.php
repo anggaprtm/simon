@@ -55,6 +55,9 @@
                             $formatted = number_format((float) ($value ?? 0), 3, ',', '.');
                             return rtrim(rtrim($formatted, '0'), ',');
                         };
+                        $formatRupiah = function ($value) {
+                            return 'Rp ' . number_format((float) ($value ?? 0), 0, ',', '.');
+                        };
                     @endphp
 
                     <div class="overflow-x-auto">
@@ -65,9 +68,13 @@
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Barang</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Keterangan</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Diajukan</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Disetujui</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status Item</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Catatan</th>
+                                    @if($pengajuanPengadaan->status !== 'Draft')
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Disetujui</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status Item</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Catatan</th>
+                                    @endif
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga Satuan</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -91,43 +98,47 @@
                                             @endif
                                         </td>
                                         <td class="px-4 py-3">{{ $formatQty($detail->jumlah) }} {{ $detail->satuan->nama_satuan }}</td>
-                                        <td class="px-4 py-3">
-                                            @can('manage-pengajuan')
-                                                @if($pengajuanPengadaan->status === 'Diajukan')
-                                                    <input type="number" name="approval_items[{{ $detail->id }}][approved_jumlah]" step="any" min="0" max="{{ $detail->jumlah }}" value="{{ $detail->jumlah }}" class="w-28 border-gray-300 rounded-md shadow-sm">
+                                        @if($pengajuanPengadaan->status !== 'Draft')
+                                            <td class="px-4 py-3">
+                                                @can('manage-pengajuan')
+                                                    @if($pengajuanPengadaan->status === 'Diajukan')
+                                                        <input type="number" name="approval_items[{{ $detail->id }}][approved_jumlah]" step="any" min="0" max="{{ $detail->jumlah }}" value="{{ $detail->jumlah }}" class="w-28 border-gray-300 rounded-md shadow-sm">
+                                                    @else
+                                                        {{ $formatQty($detail->approved_jumlah) }} {{ $detail->satuan->nama_satuan }}
+                                                    @endif
                                                 @else
                                                     {{ $formatQty($detail->approved_jumlah) }} {{ $detail->satuan->nama_satuan }}
-                                                @endif
-                                            @else
-                                                {{ $formatQty($detail->approved_jumlah) }} {{ $detail->satuan->nama_satuan }}
-                                            @endcan
-                                        </td>
-                                        <td class="px-4 py-3">
-                                            @can('manage-pengajuan')
-                                                @if($pengajuanPengadaan->status === 'Diajukan')
-                                                    <select name="approval_items[{{ $detail->id }}][status_item]" class="border-gray-300 rounded-md shadow-sm">
-                                                        <option value="disetujui">Setujui Penuh</option>
-                                                        <option value="disetujui_sebagian">Setujui Sebagian/Revisi</option>
-                                                        <option value="ditolak">Tolak Item</option>
-                                                    </select>
+                                                @endcan
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                @can('manage-pengajuan')
+                                                    @if($pengajuanPengadaan->status === 'Diajukan')
+                                                        <select name="approval_items[{{ $detail->id }}][status_item]" class="border-gray-300 rounded-md shadow-sm">
+                                                            <option value="disetujui">Setujui Penuh</option>
+                                                            <option value="disetujui_sebagian">Setujui Sebagian/Revisi</option>
+                                                            <option value="ditolak">Tolak Item</option>
+                                                        </select>
+                                                    @else
+                                                        {{ ucfirst(str_replace('_', ' ', $detail->status_item)) }}
+                                                    @endif
                                                 @else
                                                     {{ ucfirst(str_replace('_', ' ', $detail->status_item)) }}
-                                                @endif
-                                            @else
-                                                {{ ucfirst(str_replace('_', ' ', $detail->status_item)) }}
-                                            @endcan
-                                        </td>
-                                        <td class="px-4 py-3">
-                                            @can('manage-pengajuan')
-                                                @if($pengajuanPengadaan->status === 'Diajukan')
-                                                    <input type="text" name="approval_items[{{ $detail->id }}][catatan_revisi]" class="w-full border-gray-300 rounded-md shadow-sm" value="{{ $detail->catatan_revisi }}" placeholder="Opsional">
+                                                @endcan
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                @can('manage-pengajuan')
+                                                    @if($pengajuanPengadaan->status === 'Diajukan')
+                                                        <input type="text" name="approval_items[{{ $detail->id }}][catatan_revisi]" class="w-full border-gray-300 rounded-md shadow-sm" value="{{ $detail->catatan_revisi }}" placeholder="Opsional">
+                                                    @else
+                                                        {{ $detail->catatan_revisi ?: '-' }}
+                                                    @endif
                                                 @else
                                                     {{ $detail->catatan_revisi ?: '-' }}
-                                                @endif
-                                            @else
-                                                {{ $detail->catatan_revisi ?: '-' }}
-                                            @endcan
-                                        </td>
+                                                @endcan
+                                            </td>
+                                        @endif
+                                        <td class="px-4 py-3">{{ $formatRupiah($detail->harga_satuan) }}</td>
+                                        <td class="px-4 py-3 font-medium">{{ $formatRupiah(($detail->harga_satuan ?? 0) * ($detail->jumlah ?? 0)) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>

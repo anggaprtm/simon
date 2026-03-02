@@ -255,7 +255,7 @@ class PengajuanPengadaanController extends Controller
 
     public function realisasiForm(PengajuanPengadaan $pengajuanPengadaan)
     {
-        if (Auth::id() !== $pengajuanPengadaan->id_user || $pengajuanPengadaan->status !== 'Disetujui') {
+        if (Auth::id() !== $pengajuanPengadaan->id_user || ! in_array($pengajuanPengadaan->status, ['Disetujui', 'Selesai'])) {
             abort(403, 'AKSI TIDAK DIIZINKAN.');
         }
 
@@ -380,6 +380,13 @@ class PengajuanPengadaanController extends Controller
                 $pengajuanPengadaan->update(['status' => 'Selesai']);
             }
         });
+
+        $pengajuanPengadaan->refresh();
+
+        if ($pengajuanPengadaan->status === 'Selesai') {
+            return redirect()->route('pengajuan-pengadaan.show', $pengajuanPengadaan)
+                ->with('success', 'Realisasi item berhasil diproses. Semua item approved sudah direalisasikan.');
+        }
 
         return redirect()->route('pengajuan-pengadaan.realisasiForm', $pengajuanPengadaan)
             ->with('success', 'Realisasi item berhasil diproses.');
