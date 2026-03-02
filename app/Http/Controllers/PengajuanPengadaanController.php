@@ -46,8 +46,16 @@ class PengajuanPengadaanController extends Controller
             ->get();
 
         $satuans = Satuan::orderBy('nama_satuan')->get();
+        $bahanOptions = $bahans->map(function ($b) {
+            return [
+                'id' => $b->id,
+                'text' => $b->nama_bahan,
+                'stock' => $b->jumlah_stock,
+                'satuan' => $b->satuanRel->nama_satuan ?? '-',
+            ];
+        })->values();
 
-        return view('pengajuan-pengadaan.create', compact('bahans', 'satuans'));
+        return view('pengajuan-pengadaan.create', compact('bahans', 'satuans', 'bahanOptions'));
     }
 
     public function store(Request $request)
@@ -152,8 +160,27 @@ class PengajuanPengadaanController extends Controller
             ->orderBy('nama_bahan')
             ->get();
         $satuans = Satuan::orderBy('nama_satuan')->get();
+        $bahanOptions = $bahans->map(function ($b) {
+            return [
+                'id' => $b->id,
+                'text' => $b->nama_bahan,
+                'stock' => $b->jumlah_stock,
+                'satuan' => $b->satuanRel->nama_satuan ?? '-',
+            ];
+        })->values();
 
-        return view('pengajuan-pengadaan.edit', compact('pengajuanPengadaan', 'bahans', 'satuans'));
+        $detailItemsForJs = $pengajuanPengadaan->details->map(function ($d) {
+            return [
+                'item_ref' => $d->id_bahan ?: $d->nama_barang_input,
+                'spesifikasi' => $d->spesifikasi,
+                'jumlah' => $d->jumlah,
+                'id_satuan' => $d->id_satuan,
+                'harga_satuan' => $d->harga_satuan,
+                'link_referensi' => $d->link_referensi,
+            ];
+        })->values();
+
+        return view('pengajuan-pengadaan.edit', compact('pengajuanPengadaan', 'bahans', 'satuans', 'bahanOptions', 'detailItemsForJs'));
     }
 
     public function update(Request $request, PengajuanPengadaan $pengajuanPengadaan)

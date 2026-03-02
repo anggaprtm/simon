@@ -64,21 +64,9 @@
         document.addEventListener('DOMContentLoaded', function () {
             const container = document.getElementById('items-container');
             const addItemBtn = document.getElementById('add-item-btn');
-            const bahanList = @json($bahans->map(fn($b) => [
-                'id' => $b->id,
-                'text' => $b->nama_bahan,
-                'stock' => $b->jumlah_stock,
-                'satuan' => $b->satuanRel->nama_satuan ?? '-',
-            ]));
+            const bahanList = @json($bahanOptions);
             const satuans = @json($satuans);
-            const oldItems = @json(old('items', $pengajuanPengadaan->details->map(fn($d) => [
-                'item_ref' => $d->id_bahan ?: $d->nama_barang_input,
-                'spesifikasi' => $d->spesifikasi,
-                'jumlah' => $d->jumlah,
-                'id_satuan' => $d->id_satuan,
-                'harga_satuan' => $d->harga_satuan,
-                'link_referensi' => $d->link_referensi,
-            ])));
+            const oldItems = @json(old('items', $detailItemsForJs));
             let itemIndex = 0;
 
             function satuanOptions(selectedId = '') {

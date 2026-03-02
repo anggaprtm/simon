@@ -68,12 +68,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const container = document.getElementById('items-container');
             const addItemBtn = document.getElementById('add-item-btn');
-            const bahanList = @json($bahans->map(fn($b) => [
-                'id' => $b->id,
-                'text' => $b->nama_bahan,
-                'stock' => $b->jumlah_stock,
-                'satuan' => $b->satuanRel->nama_satuan ?? '-',
-            ]));
+            const bahanList = @json($bahanOptions);
             const satuans = @json($satuans);
             const oldItems = @json(old('items', []));
             let itemIndex = 0;
