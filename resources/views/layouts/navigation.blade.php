@@ -12,19 +12,23 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    @if(Auth::user()->role == 'laboran')
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    @endif
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link :href="route('bahan.index')" :active="request()->routeIs('bahan.*')">
                             {{ __('Bahan') }}
                         </x-nav-link>
                     </div>
+                    @if(Auth::user()->role == 'laboran')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link :href="route('gudang.index')" :active="request()->routeIs('gudang.*')">
                             {{ __('Gudang') }}
                         </x-nav-link>
                     </div>
+                    @endif
                     @if(Auth::user()->role == 'superadmin')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link :href="route('program-studi.index')" :active="request()->routeIs('program-studi.*')">
