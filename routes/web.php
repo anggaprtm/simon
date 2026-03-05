@@ -13,6 +13,7 @@ use App\Http\Controllers\SatuanController;
 use App\Http\Controllers\PeriodeController;
 use App\Http\Controllers\MasterBarangController;
 use App\Http\Controllers\PengajuanPengadaanController;
+use App\Http\Controllers\UserController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
