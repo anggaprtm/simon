@@ -34,6 +34,7 @@
                                 <x-input-label for="role" :value="__('Role')" />
                                 <select id="role" name="role" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm" required onchange="toggleProdi()">
                                     <option value="laboran" {{ old('role') == 'laboran' ? 'selected' : '' }}>Laboran</option>
+                                    <option value="kps" {{ old('role') == 'kps' ? 'selected' : '' }}>KPS (Koordinator Prodi)</option>
                                     <option value="fakultas" {{ old('role') == 'fakultas' ? 'selected' : '' }}>Fakultas / Pimpinan</option>
                                     <option value="superadmin" {{ old('role') == 'superadmin' ? 'selected' : '' }}>Superadmin</option>
                                 </select>
@@ -72,15 +73,15 @@
         function toggleProdi() {
             const role = document.getElementById('role').value;
             const prodiWrapper = document.getElementById('prodi-wrapper');
-            // Tampilkan pilihan prodi hanya jika role adalah laboran
-            if (role === 'laboran') {
+            
+            // Tampilkan pilihan prodi jika role adalah laboran atau kps
+            if (role === 'laboran' || role === 'kps') {
                 prodiWrapper.style.display = 'block';
             } else {
                 prodiWrapper.style.display = 'none';
                 document.getElementById('id_program_studi').value = '';
             }
         }
-        // Jalankan saat load pertama kali
         document.addEventListener('DOMContentLoaded', toggleProdi);
     </script>
 </x-app-layout>

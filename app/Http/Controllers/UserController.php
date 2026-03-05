@@ -30,7 +30,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255|unique:users,name',
             'email' => 'required|string|email|max:255|unique:users,email',
             'nik' => 'nullable|string|max:50',
-            'role' => 'required|in:laboran,fakultas,superadmin',
+            'role' => 'required|in:laboran,kps,fakultas,superadmin',
             'id_program_studi' => 'nullable|exists:program_studis,id',
             'password' => 'required|string|min:8',
         ]);

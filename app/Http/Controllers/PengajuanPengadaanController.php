@@ -26,7 +26,7 @@ class PengajuanPengadaanController extends Controller
     public function __construct()
     {
         Gate::define('create-pengajuan', function ($user) {
-            return $user->role === 'laboran';
+            return in_array($user->role, ['laboran', 'kps']);
         });
     }
 
@@ -37,6 +37,9 @@ class PengajuanPengadaanController extends Controller
 
         if ($user->role === 'laboran') {
             $query->where('id_user', $user->id);
+        } elseif ($user->role === 'kps') {
+            // KPS memantau seluruh pengajuan di dalam prodinya
+            $query->where('id_program_studi', $user->id_program_studi);
         }
 
         $pengajuans = $query->get();
