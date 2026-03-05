@@ -212,18 +212,19 @@ class TransaksiStokController extends Controller
                 // Kunci baris agar tidak ada proses lain yang mengubah stok saat ini
                 $bahan = Bahan::where('id', $bahan->id)->lockForUpdate()->firstOrFail();
                 
-                $stok_sistem = $bahan->jumlah_stock;
-                $stok_fisik = (int) $request->stok_fisik;
+                $stok_sistem = (float) $bahan->jumlah_stock;
+                $stok_fisik = (float) $request->stok_fisik;
                 
                 // Hitung selisihnya
                 $selisih = $stok_fisik - $stok_sistem;
 
                 // Jika tidak ada selisih, tidak perlu lakukan apa-apa
-                if ($selisih == 0) {
+                if (abs($selisih) < 0.0005) {
                     // Kita bisa redirect dengan pesan 'info' (opsional)
                     // Untuk saat ini, kita anggap tidak terjadi apa-apa
                     throw new \Exception('Tidak ada perubahan stok. Jumlah fisik sama dengan jumlah sistem.');
                 }
+
 
                 $jenis_transaksi = $selisih > 0 ? 'penyesuaian_masuk' : 'penyesuaian_keluar';
                 

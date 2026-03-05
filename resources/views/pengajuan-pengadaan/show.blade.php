@@ -16,9 +16,9 @@
                     <a href="{{ route('pengajuan-pengadaan.realisasiForm', $pengajuanPengadaan) }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">Input Stok Masuk</a>
                 @endif
 
-                @if($pengajuanPengadaan->status !== 'Draft')
-                    <a href="{{ route('pengajuan-pengadaan.cetakNota', $pengajuanPengadaan->id) }}" target="_blank" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">Cetak Nota Dinas</a>
-                @endif
+                <a href="{{ route('pengajuan-pengadaan.cetakNota', $pengajuanPengadaan->id) }}" target="_blank" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+                    {{ $pengajuanPengadaan->status === 'Draft' ? 'Preview Draft Nota' : 'Cetak Nota Dinas' }}
+                </a>
             </div>
         </div>
     </x-slot>
