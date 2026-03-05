@@ -18,7 +18,9 @@ use setasign\Fpdi\PdfParser\StreamReader;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Models\Bahan;
 
 class PengajuanPengadaanController extends Controller
 {
@@ -574,20 +576,68 @@ class PengajuanPengadaanController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Gagal membaca file: ' . $e->getMessage()], 500);
         }
     }
+
     public function downloadTemplate()
     {
         $spreadsheet = new Spreadsheet();
+        
+        // --- SHEET 1: TEMPLATE INPUT ---
         $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Template Pengajuan');
 
-        // Set Header Kolom
         $headers = ['Nama Bahan', 'Spesifikasi', 'Jumlah', 'Satuan', 'Harga Satuan', 'Link Referensi'];
         $sheet->fromArray($headers, NULL, 'A1');
-
-        // Styling biar header bold dan ukurannya sedikit di-adjust
         $sheet->getStyle('A1:F1')->getFont()->setBold(true);
+
+        // --- SHEET 2: MASTER BAHAN ---
+        // Kita buat sheet tersembunyi/tambahan khusus untuk nyimpen data bahan existing
+        $masterSheet = $spreadsheet->createSheet();
+        $masterSheet->setTitle('Master Bahan Existing');
+        
+        $user = Auth::user();
+        // Ambil semua nama bahan sesuai prodi user
+        $bahans = Bahan::where('id_program_studi', $user->id_program_studi)
+            ->orderBy('nama_bahan')
+            ->pluck('nama_bahan')
+            ->toArray();
+
+        // Masukkan data bahan ke Sheet 2 (Mulai dari A1 ke bawah)
+        foreach ($bahans as $index => $namaBahan) {
+            $masterSheet->setCellValue('A' . ($index + 1), $namaBahan);
+        }
+
+        // --- TAMBAHKAN DROPDOWN KE SHEET 1 ---
+        $totalBahan = count($bahans);
+        if ($totalBahan > 0) {
+            // Buat rule validasinya
+            $validation = $sheet->getCell('A2')->getDataValidation();
+            $validation->setType(DataValidation::TYPE_LIST);
+            $validation->setErrorStyle(DataValidation::STYLE_INFORMATION);
+            $validation->setAllowBlank(true);
+            $validation->setShowInputMessage(true);
+            // PENTING: setShowErrorMessage(false) agar laboran BISA ngetik manual bahan baru
+            $validation->setShowErrorMessage(false); 
+            $validation->setShowDropDown(true);
+            $validation->setPromptTitle('Pilih / Ketik Bahan');
+            $validation->setPrompt('Pilih dari dropdown untuk existing, atau ketik langsung jika bahan baru.');
+            
+            // Ambil range dari Sheet 2
+            $validation->setFormula1('\'Master Bahan Existing\'!$A$1:$A$' . $totalBahan);
+
+            // Copy validation ke baris 3 sampai 200 (asumsi max 200 baris sekali import)
+            for ($i = 3; $i <= 200; $i++) {
+                $sheet->getCell("A{$i}")->setDataValidation(clone $validation);
+            }
+        }
+
+        // Rapihkan ukuran kolom
         foreach(range('A','F') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
+        $masterSheet->getColumnDimension('A')->setAutoSize(true);
+
+        // Kembalikan fokus ke Sheet 1 agar pas file dibuka langsung di form input
+        $spreadsheet->setActiveSheetIndex(0);
 
         $writer = new Xlsx($spreadsheet);
 

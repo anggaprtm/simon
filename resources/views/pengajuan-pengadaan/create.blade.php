@@ -36,7 +36,7 @@
                             </div>
                             <div class="flex items-center gap-2 w-full md:w-auto">
                                 <input type="file" id="excel-file" accept=".xlsx, .xls, .csv" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200 cursor-pointer border border-gray-300 rounded bg-white">
-                                <button type="button" id="btn-import-excel" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded whitespace-nowrap">
+                                <button type="button" id="btn-import-excel" class="bg-indigo-600 hover:bg-indigo-700 text-gray-500 font-bold py-2 px-4 rounded whitespace-nowrap">
                                     Proses Import
                                 </button>
                             </div>
