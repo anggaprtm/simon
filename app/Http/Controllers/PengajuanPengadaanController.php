@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use setasign\Fpdi\Fpdi;
 use setasign\Fpdi\PdfParser\StreamReader;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PengajuanPengadaanController extends Controller
 {
@@ -511,5 +515,87 @@ class PengajuanPengadaanController extends Controller
                 'link_referensi' => $item['link_referensi'] ?? null,
             ]);
         }
+    }
+
+    public function parseExcel(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:5120',
+        ]);
+
+        try {
+            $file = $request->file('file');
+            $spreadsheet = IOFactory::load($file->getPathname());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $rows = $worksheet->toArray();
+
+            $parsedData = [];
+            $user = Auth::user();
+
+            // Ambil data referensi untuk mapping
+            $satuans = Satuan::all()->keyBy(fn($item) => strtolower(trim($item->nama_satuan)));
+            $bahans = Bahan::where('id_program_studi', $user->id_program_studi)
+                ->get()
+                ->keyBy(fn($item) => strtolower(trim($item->nama_bahan)));
+
+            foreach ($rows as $index => $row) {
+                // Lewati baris pertama (asumsi baris pertama adalah Header)
+                if ($index === 0) continue; 
+
+                $namaBahan = trim((string)($row[0] ?? ''));
+                if (empty($namaBahan)) continue; // Skip jika nama bahan kosong
+
+                $spesifikasi = trim((string)($row[1] ?? ''));
+                $jumlah = (float)($row[2] ?? 0);
+                $namaSatuan = strtolower(trim((string)($row[3] ?? '')));
+                $hargaSatuan = (int)($row[4] ?? 0);
+                $link = trim((string)($row[5] ?? ''));
+
+                // Cocokkan ID Satuan
+                $id_satuan = $satuans->has($namaSatuan) ? $satuans[$namaSatuan]->id : '';
+
+                // Cocokkan ID Bahan (Jika existing kirim ID, jika baru kirim teksnya)
+                $bahanKey = strtolower($namaBahan);
+                $item_ref = $bahans->has($bahanKey) ? (string)$bahans[$bahanKey]->id : $namaBahan;
+
+                $parsedData[] = [
+                    'item_ref' => $item_ref,
+                    'spesifikasi' => $spesifikasi,
+                    'jumlah' => $jumlah,
+                    'id_satuan' => $id_satuan,
+                    'harga_satuan' => $hargaSatuan,
+                    'link_referensi' => $link,
+                ];
+            }
+
+            return response()->json(['status' => 'success', 'data' => $parsedData]);
+
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => 'Gagal membaca file: ' . $e->getMessage()], 500);
+        }
+    }
+    public function downloadTemplate()
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set Header Kolom
+        $headers = ['Nama Bahan', 'Spesifikasi', 'Jumlah', 'Satuan', 'Harga Satuan', 'Link Referensi'];
+        $sheet->fromArray($headers, NULL, 'A1');
+
+        // Styling biar header bold dan ukurannya sedikit di-adjust
+        $sheet->getStyle('A1:F1')->getFont()->setBold(true);
+        foreach(range('A','F') as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        }
+
+        $writer = new Xlsx($spreadsheet);
+
+        return new StreamedResponse(function () use ($writer) {
+            $writer->save('php://output');
+        }, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="Template_Pengajuan_Pengadaan.xlsx"',
+        ]);
     }
 }

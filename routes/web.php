@@ -39,6 +39,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('pengajuan-pengadaan/{pengajuanPengadaan}/setujui', [PengajuanPengadaanController::class, 'setujui'])->name('pengajuan-pengadaan.setujui');
     Route::post('pengajuan-pengadaan/{pengajuanPengadaan}/tolak', [PengajuanPengadaanController::class, 'tolak'])->name('pengajuan-pengadaan.tolak');
     Route::resource('pengajuan-pengadaan', PengajuanPengadaanController::class);
+    Route::post('pengajuan-pengadaan/parse-excel', [PengajuanPengadaanController::class, 'parseExcel'])->name('pengajuan-pengadaan.parse-excel')
+    Route::get('pengajuan-pengadaan/template-excel', [PengajuanPengadaanController::class, 'downloadTemplate'])->name('pengajuan-pengadaan.template-excel')
 
     Route::prefix('transaksi')->name('transaksi.')->group(function() {
         // Rute untuk menampilkan form

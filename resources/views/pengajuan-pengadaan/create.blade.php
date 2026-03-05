@@ -26,7 +26,21 @@
                                 <x-input-error :messages="$errors->get('semester')" class="mt-2" />
                             </div>
                         </div>
-
+                        <div class="mb-6 p-4 border border-indigo-200 rounded-lg bg-indigo-50 flex flex-col md:flex-row items-center justify-between gap-4">
+                            <div>
+                                <h4 class="font-bold text-indigo-800">Import Data dari Excel</h4>
+                                <p class="text-sm text-indigo-600">Pastikan urutan kolom: <b>Nama Bahan | Spesifikasi | Jumlah | Satuan | Harga Satuan | Link Referensi</b></p>
+                                <a href="{{ route('pengajuan-pengadaan.template-excel') }}" class="text-sm text-blue-600 hover:text-blue-800 underline mt-2 inline-block font-semibold">
+                                    ↓ Download Template Excel
+                                </a>
+                            </div>
+                            <div class="flex items-center gap-2 w-full md:w-auto">
+                                <input type="file" id="excel-file" accept=".xlsx, .xls, .csv" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200 cursor-pointer border border-gray-300 rounded bg-white">
+                                <button type="button" id="btn-import-excel" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded whitespace-nowrap">
+                                    Proses Import
+                                </button>
+                            </div>
+                        </div>
                         <h3 class="text-lg font-semibold border-t pt-4 mb-2">Detail Barang</h3>
                         <p class="text-sm text-gray-600 mb-4">Ketik untuk mencari bahan existing atau ketik nama bahan baru. Existing akan menampilkan stok saat ini.</p>
 
@@ -154,6 +168,58 @@
                     row.remove();
                 }
             });
+        });
+
+        const excelInput = document.getElementById('excel-file');
+        const btnImport = document.getElementById('btn-import-excel');
+
+        btnImport.addEventListener('click', async function () {
+            if (!excelInput.files.length) {
+                alert('Silakan pilih file Excel terlebih dahulu!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', excelInput.files[0]);
+            formData.append('_token', '{{ csrf_token() }}');
+
+            btnImport.textContent = 'Memproses...';
+            btnImport.disabled = true;
+
+            try {
+                const response = await fetch('{{ route("pengajuan-pengadaan.parse-excel") }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    if (result.data.length > 0) {
+                        // Hapus row kosong bawaan form
+                        container.innerHTML = ''; 
+                        
+                        // Looping data dari Excel dan render menjadi row
+                        result.data.forEach(item => {
+                            createRow(item);
+                        });
+                        
+                        alert(`Berhasil mengimpor ${result.data.length} item. Silakan review kembali sebelum diajukan.`);
+                    } else {
+                        alert('File Excel kosong atau format tidak sesuai.');
+                    }
+                } else {
+                    alert(result.message || 'Terjadi kesalahan saat memproses file.');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Terjadi kesalahan koneksi saat mengimpor data.');
+            } finally {
+                btnImport.textContent = 'Proses Import';
+                btnImport.disabled = false;
+                excelInput.value = ''; // Reset input file
+            }
         });
     </script>
     @endpush
