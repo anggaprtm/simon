@@ -22,6 +22,17 @@
                             <x-text-input id="kode_program_studi" class="block mt-1 w-full" type="text" name="kode_program_studi" :value="old('kode_program_studi')" />
                             <x-input-error :messages="$errors->get('kode_program_studi')" class="mt-2" />
                         </div>
+                        
+                        <div class="mt-4">
+                            <x-input-label for="nama_kps" :value="__('Nama Koordinator Program Studi (Beserta Gelar)')" />
+                            <x-text-input id="nama_kps" class="block mt-1 w-full" type="text" name="nama_kps" :value="old('nama_kps')" placeholder="Contoh: Dr. Eng. Fulan, S.T., M.T." />
+                            <x-input-error :messages="$errors->get('nama_kps')" class="mt-2" />
+                        </div>
+                        <div class="mt-4">
+                            <x-input-label for="nip_kps" :value="__('NIP KPS')" />
+                            <x-text-input id="nip_kps" class="block mt-1 w-full" type="text" name="nip_kps" :value="old('nip_kps')" placeholder="Contoh: 198001012005011001" />
+                            <x-input-error :messages="$errors->get('nip_kps')" class="mt-2" />
+                        </div>
 
                         <div class="flex items-center justify-end mt-4">
                             <a href="{{ route('program-studi.index') }}" class="text-sm text-gray-600 hover:text-gray-900 mr-4">

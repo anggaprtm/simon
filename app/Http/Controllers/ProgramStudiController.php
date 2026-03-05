@@ -32,6 +32,8 @@ class ProgramStudiController extends Controller
         $request->validate([
             'nama_program_studi' => 'required|string|max:255|unique:program_studis',
             'kode_program_studi' => 'nullable|string|max:50|unique:program_studis',
+            'nama_kps' => 'nullable|string|max:255',
+            'nip_kps' => 'nullable|string|max:50',
         ]);
 
         ProgramStudi::create($request->all());
@@ -65,6 +67,8 @@ class ProgramStudiController extends Controller
         $request->validate([
             'nama_program_studi' => 'required|string|max:255|unique:program_studis,nama_program_studi,' . $programStudi->id,
             'kode_program_studi' => 'nullable|string|max:50|unique:program_studis,kode_program_studi,' . $programStudi->id,
+            'nama_kps' => 'nullable|string|max:255',
+            'nip_kps' => 'nullable|string|max:50'
         ]);
 
         $programStudi->update($request->all());
