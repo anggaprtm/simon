@@ -10,43 +10,70 @@ class PeriodeController extends Controller
 {
     public function index()
     {
-        // Ambil tahun aktif terbaru dari data periode stok
-        $tahun_aktif = PeriodeStok::max('tahun_periode') ?? date('Y');
-        return view('periode.index', compact('tahun_aktif'));
+        // Cari tahun yang statusnya masih aktif, jangan pakai max() karena rawan salah jika ada data anomali
+        $periodeAktif = PeriodeStok::where('status', 'aktif')->first();
+        $tahun_aktif = $periodeAktif ? $periodeAktif->tahun_periode : date('Y');
+
+        // Batasi hanya bisa tutup tahun di bulan Desember (12) dan Januari (1)
+        $bulan_sekarang = (int) date('n');
+        $bisa_tutup = in_array($bulan_sekarang, [12, 1]);
+
+        return view('periode.index', compact('tahun_aktif', 'bisa_tutup'));
     }
 
     public function tutupTahun(Request $request)
     {
+        // Validasi ganda di backend (mencegah user bypass lewat inspect element)
+        $bulan_sekarang = (int) date('n');
+        if (!in_array($bulan_sekarang, [12, 1])) {
+            return redirect()->route('periode.index')->with('error', 'AKSI DITOLAK: Tutup tahun hanya dapat dilakukan pada bulan Desember atau Januari.');
+        }
+
         $tahun_tutup = (int) $request->tahun_tutup;
         $tahun_baru = $tahun_tutup + 1;
 
         try {
             DB::transaction(function () use ($tahun_tutup, $tahun_baru) {
-                // 1. Ambil semua bahan
-                $bahans = Bahan::all();
+                // Proses data per 500 baris agar RAM server tidak jebol
+                Bahan::chunk(500, function ($bahans) use ($tahun_tutup, $tahun_baru) {
+                    foreach ($bahans as $bahan) {
+                        // Kunci row ini (lockForUpdate) agar tidak ada yang bisa transaksi saat diproses
+                        $periode_lama = PeriodeStok::where('id_bahan', $bahan->id)
+                            ->where('tahun_periode', $tahun_tutup)
+                            ->where('status', 'aktif')
+                            ->lockForUpdate()
+                            ->first();
 
-                foreach ($bahans as $bahan) {
-                    // 2. Cari periode aktif untuk bahan ini
-                    $periode_lama = $bahan->periodeStoks()->where('tahun_periode', $tahun_tutup)->first();
+                        if ($periode_lama) {
+                            $periode_lama->update([
+                                'stok_akhir' => $bahan->jumlah_stock,
+                                'status' => 'ditutup',
+                            ]);
 
-                    if ($periode_lama && $periode_lama->status === 'aktif') {
-                        // 3. Update periode lama: catat stok akhir dan ubah status
-                        $periode_lama->update([
-                            'stok_akhir' => $bahan->jumlah_stock, // Stok akhir adalah stok real-time saat ini
-                            'status' => 'ditutup',
-                        ]);
-
-                        // 4. Buat periode baru untuk tahun berikutnya
-                        $bahan->periodeStoks()->create([
-                            'tahun_periode' => $tahun_baru,
-                            'stok_awal' => $bahan->jumlah_stock, // Stok awal tahun baru = stok akhir tahun lama
-                            'status' => 'aktif',
-                        ]);
-                        
-                        // Kolom jumlah_stock di tabel `bahans` tidak perlu diubah, karena sudah merepresentasikan
-                        // stok akhir tahun lama yang juga menjadi stok awal tahun baru.
+                            PeriodeStok::create([
+                                'id_bahan' => $bahan->id,
+                                'tahun_periode' => $tahun_baru,
+                                'stok_awal' => $bahan->jumlah_stock,
+                                'stok_akhir' => 0,
+                                'status' => 'aktif',
+                            ]);
+                        } else {
+                            // EDGE CASE: Jika bahan ada tapi belum punya periode di tahun ini, 
+                            // langsung buatkan periode untuk tahun depan biar nggak error/hilang dari laporan.
+                            $cekPeriodeBaru = PeriodeStok::where('id_bahan', $bahan->id)->where('tahun_periode', $tahun_baru)->exists();
+                            
+                            if (!$cekPeriodeBaru) {
+                                PeriodeStok::create([
+                                    'id_bahan' => $bahan->id,
+                                    'tahun_periode' => $tahun_baru,
+                                    'stok_awal' => $bahan->jumlah_stock,
+                                    'stok_akhir' => 0,
+                                    'status' => 'aktif',
+                                ]);
+                            }
+                        }
                     }
-                }
+                });
             });
         } catch (\Exception $e) {
             return redirect()->route('periode.index')->with('error', 'Gagal melakukan proses tutup tahun: ' . $e->getMessage());
