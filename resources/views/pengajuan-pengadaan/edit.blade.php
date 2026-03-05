@@ -11,17 +11,24 @@
                         @csrf
                         @method('PUT')
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                             <div>
                                 <x-input-label for="tahun_ajaran" :value="__('Tahun Ajaran')" />
-                                <x-text-input id="tahun_ajaran" class="block mt-1 w-full" type="text" name="tahun_ajaran" :value="old('tahun_ajaran', $pengajuanPengadaan->tahun_ajaran)" required />
+                                <x-text-input id="tahun_ajaran" class="block mt-1 w-full" type="text" name="tahun_ajaran" :value="old('tahun_ajaran')" required placeholder="Contoh: 2024/2025" />
+                                <x-input-error :messages="$errors->get('tahun_ajaran')" class="mt-2" />
                             </div>
                             <div>
                                 <x-input-label for="semester" :value="__('Semester')" />
                                 <select id="semester" name="semester" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm" required>
-                                    <option value="Ganjil" {{ old('semester', $pengajuanPengadaan->semester) == 'Ganjil' ? 'selected' : '' }}>Ganjil</option>
-                                    <option value="Genap" {{ old('semester', $pengajuanPengadaan->semester) == 'Genap' ? 'selected' : '' }}>Genap</option>
+                                    <option value="Ganjil" {{ old('semester') == 'Ganjil' ? 'selected' : '' }}>Ganjil</option>
+                                    <option value="Genap" {{ old('semester') == 'Genap' ? 'selected' : '' }}>Genap</option>
                                 </select>
+                                <x-input-error :messages="$errors->get('semester')" class="mt-2" />
+                            </div>
+                            <div>
+                                <x-input-label for="nomor_surat" :value="old('nomor_surat', $pengajuanPengadaan->nomor_surat)" />
+                                <x-text-input id="nomor_surat" class="block mt-1 w-full" type="text" name="nomor_surat" :value="old('nomor_surat')" placeholder="Kosongkan jika belum ada" />
+                                <x-input-error :messages="$errors->get('nomor_surat')" class="mt-2" />
                             </div>
                         </div>
 

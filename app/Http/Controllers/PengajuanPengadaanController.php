@@ -85,6 +85,7 @@ class PengajuanPengadaanController extends Controller
                     'id_program_studi' => $user->id_program_studi,
                     'tahun_ajaran' => $request->tahun_ajaran,
                     'semester' => $request->semester,
+                    'nomor_surat' => $request->nomor_surat,
                     'status' => $status,
                 ]);
 
@@ -223,6 +224,7 @@ class PengajuanPengadaanController extends Controller
                 $pengajuanPengadaan->update([
                     'tahun_ajaran' => $request->tahun_ajaran,
                     'semester' => $request->semester,
+                    'nomor_surat' => $request->nomor_surat,
                     'status' => $status,
                 ]);
 
@@ -499,6 +501,7 @@ class PengajuanPengadaanController extends Controller
         $request->validate([
             'tahun_ajaran' => 'required|string|max:9',
             'semester' => 'required|in:Ganjil,Genap',
+            'nomor_surat' => 'nullable|string|max:100',
             'items' => 'required|array|min:1',
             'items.*.item_ref' => 'required|string|max:255',
             'items.*.jumlah' => 'required|numeric|gt:0',

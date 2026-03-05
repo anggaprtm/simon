@@ -11,7 +11,7 @@
                 <div class="p-6 text-gray-900">
                     <form action="{{ route('pengajuan-pengadaan.store') }}" method="POST">
                         @csrf
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                             <div>
                                 <x-input-label for="tahun_ajaran" :value="__('Tahun Ajaran')" />
                                 <x-text-input id="tahun_ajaran" class="block mt-1 w-full" type="text" name="tahun_ajaran" :value="old('tahun_ajaran')" required placeholder="Contoh: 2024/2025" />
@@ -24,6 +24,11 @@
                                     <option value="Genap" {{ old('semester') == 'Genap' ? 'selected' : '' }}>Genap</option>
                                 </select>
                                 <x-input-error :messages="$errors->get('semester')" class="mt-2" />
+                            </div>
+                            <div>
+                                <x-input-label for="nomor_surat" :value="__('Nomor Surat (Opsional)')" />
+                                <x-text-input id="nomor_surat" class="block mt-1 w-full" type="text" name="nomor_surat" :value="old('nomor_surat')" placeholder="Kosongkan jika belum ada" />
+                                <x-input-error :messages="$errors->get('nomor_surat')" class="mt-2" />
                             </div>
                         </div>
                         <div class="mb-6 p-4 border border-indigo-200 rounded-lg bg-indigo-50 flex flex-col md:flex-row items-center justify-between gap-4">
