@@ -54,8 +54,14 @@
             <p>{{ $pengajuan->created_at->isoFormat('D MMMM YYYY') }}</p>
             <p>Koordinator Program Studi,</p>
             <div style="height:80px;"></div>
-            <p class="text-bold underline">(.................................................)</p>
-            <p>NIP. .........................................</p>
+            
+            @if($pengajuan->programStudi->nama_kps)
+                <p class="text-bold underline">{{ $pengajuan->programStudi->nama_kps }}</p>
+                <p>NIP. {{ $pengajuan->programStudi->nip_kps ?: '-' }}</p>
+            @else
+                <p class="text-bold underline">(.................................................)</p>
+                <p>NIP. .........................................</p>
+            @endif
         </div>
     </div>
 </body>
