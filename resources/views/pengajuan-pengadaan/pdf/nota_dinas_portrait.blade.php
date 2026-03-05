@@ -33,7 +33,7 @@
 
         <h3 class="text-center text-bold mt-3 mb-4">NOTA DINAS</h3>
         <p class="text-center" style="margin-top:-17px;">
-            Nomor: {{ $pengajuan->nomor_surat ?? '.........../B/UN3.FTMM/RN/PL.00/' . $pengajuan->created_at->year }}
+            Nomor: {{ $pengajuan->nomor_surat ?? ''.................................'' . $pengajuan->created_at->year }}
         </p>
 
         <table class="meta-table">

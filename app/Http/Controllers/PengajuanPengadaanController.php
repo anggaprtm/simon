@@ -261,6 +261,24 @@ class PengajuanPengadaanController extends Controller
             ->with('success', 'Pengajuan berhasil diajukan dan siap direview Fakultas.');
     }
 
+    public function updateNomorSurat(Request $request, PengajuanPengadaan $pengajuanPengadaan)
+    {
+        // Hanya pembuat draft yang bisa update nomor surat
+        if (Auth::id() !== $pengajuanPengadaan->id_user) {
+            abort(403, 'AKSI TIDAK DIIZINKAN.');
+        }
+
+        $request->validate([
+            'nomor_surat' => 'required|string|max:100',
+        ]);
+
+        $pengajuanPengadaan->update([
+            'nomor_surat' => $request->nomor_surat
+        ]);
+
+        return redirect()->back()->with('success', 'Nomor surat berhasil disimpan.');
+    }
+
     public function realisasiForm(PengajuanPengadaan $pengajuanPengadaan)
     {
         if (Auth::id() !== $pengajuanPengadaan->id_user || ! in_array($pengajuanPengadaan->status, ['Disetujui', 'Selesai'])) {

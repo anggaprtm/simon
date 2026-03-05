@@ -27,6 +27,29 @@
         <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
+                    <div class="mb-6 bg-indigo-50 p-4 rounded-lg border border-indigo-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Tahun Ajaran: <span class="font-semibold text-gray-900">{{ $pengajuanPengadaan->tahun_ajaran }} (Semester {{ $pengajuanPengadaan->semester }})</span></p>
+                            <p class="text-sm text-gray-600">Nomor Surat: 
+                                <span class="font-bold {{ $pengajuanPengadaan->nomor_surat ? 'text-indigo-700' : 'text-red-500' }}">
+                                    {{ $pengajuanPengadaan->nomor_surat ?? 'Belum diinput' }}
+                                </span>
+                            </p>
+                        </div>
+                        
+                        @if(Auth::id() === $pengajuanPengadaan->id_user && in_array($pengajuanPengadaan->status, ['Draft', 'Diajukan']))
+                            <button type="button" onclick="editNomorSurat()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 px-4 rounded shadow-sm flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                Update Nomor Surat
+                            </button>
+                        @endif
+                    </div>
+
+                    <form id="form-update-nomor" action="{{ route('pengajuan-pengadaan.updateNomor', $pengajuanPengadaan->id) }}" method="POST" class="hidden">
+                        @csrf
+                        @method('PATCH')
+                        <input type="hidden" name="nomor_surat" id="input-nomor-surat">
+                    </form>
                     @if (session('success'))
                         <div class="mb-4 rounded border border-green-300 bg-green-50 p-3 text-green-700">{{ session('success') }}</div>
                     @endif
@@ -182,4 +205,32 @@
             </div>
         </div>
     </div>
+    @push('scripts')
+    <script>
+        function editNomorSurat() {
+            Swal.fire({
+                title: 'Update Nomor Surat',
+                text: 'Masukkan nomor surat dari sistem E-Office',
+                input: 'text',
+                inputValue: '{{ $pengajuanPengadaan->nomor_surat ?? "" }}',
+                inputPlaceholder: 'Contoh: 123/UN3.FTMM/RN/PL.00/2026',
+                showCancelButton: true,
+                confirmButtonText: 'Simpan Nomor',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#4f46e5',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'Nomor surat tidak boleh kosong!';
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Masukkan value dari SweetAlert ke input hidden lalu submit formnya
+                    document.getElementById('input-nomor-surat').value = result.value;
+                    document.getElementById('form-update-nomor').submit();
+                }
+            });
+        }
+    </script>
+    @endpush
 </x-app-layout>

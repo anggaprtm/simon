@@ -40,6 +40,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('pengajuan-pengadaan/{pengajuanPengadaan}/tolak', [PengajuanPengadaanController::class, 'tolak'])->name('pengajuan-pengadaan.tolak');
     Route::post('pengajuan-pengadaan/parse-excel', [PengajuanPengadaanController::class, 'parseExcel'])->name('pengajuan-pengadaan.parse-excel');
     Route::get('pengajuan-pengadaan/template-excel', [PengajuanPengadaanController::class, 'downloadTemplate'])->name('pengajuan-pengadaan.template-excel');
+    Route::patch('pengajuan-pengadaan/{pengajuanPengadaan}/update-nomor', [PengajuanPengadaanController::class, 'updateNomorSurat'])->name('pengajuan-pengadaan.updateNomor');
     Route::resource('pengajuan-pengadaan', PengajuanPengadaanController::class);
     Route::resource('user', UserController::class);
 
