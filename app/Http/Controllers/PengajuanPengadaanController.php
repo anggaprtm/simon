@@ -20,7 +20,6 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use App\Models\Bahan;
 
 class PengajuanPengadaanController extends Controller
 {
