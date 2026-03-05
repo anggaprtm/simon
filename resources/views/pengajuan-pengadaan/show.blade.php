@@ -73,22 +73,28 @@
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status Item</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Catatan</th>
                                     @endif
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga Satuan</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga Satuan (HPS)</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga Total (HPS)</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Link Referensi</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
+                                @php $grandTotal = 0; @endphp
                                 @foreach ($pengajuanPengadaan->details as $detail)
                                     @php
                                         $isExisting = !is_null($detail->id_bahan);
                                         $stokSaatIni = $isExisting ? $detail->bahan?->formatted_stock : null;
+                                        // Gunakan jumlah disetujui jika ada, jika tidak gunakan jumlah diajukan
+                                        $jumlahFinal = $detail->approved_jumlah ?? $detail->jumlah;
+                                        $totalHarga = ($detail->harga_satuan ?? 0) * ($jumlahFinal ?? 0);
+                                        $grandTotal += $totalHarga;
                                     @endphp
                                     <tr>
                                         <td class="px-4 py-3">{{ $loop->iteration }}</td>
                                         <td class="px-4 py-3">
                                             <div class="font-medium">{{ $detail->display_nama_barang }}</div>
                                             @if(!$isExisting)
-                                                <span class="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded">Pengajuan bahan baru</span>
+                                                <span class="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded mt-1 inline-block">Bahan baru</span>
                                             @endif
                                         </td>
                                         <td class="px-4 py-3 text-sm text-gray-600">
@@ -138,10 +144,24 @@
                                             </td>
                                         @endif
                                         <td class="px-4 py-3">{{ $formatRupiah($detail->harga_satuan) }}</td>
-                                        <td class="px-4 py-3 font-medium">{{ $formatRupiah(($detail->harga_satuan ?? 0) * ($detail->jumlah ?? 0)) }}</td>
+                                        <td class="px-4 py-3 font-medium text-gray-900">{{ $formatRupiah($totalHarga) }}</td>
+                                        <td class="px-4 py-3">
+                                            @if($detail->link_referensi)
+                                                <a href="{{ $detail->link_referensi }}" target="_blank" class="text-blue-600 hover:text-blue-900 underline break-all text-sm">Buka Link</a>
+                                            @else
+                                                <span class="text-gray-400">-</span>
+                                            @endif
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
+                            <tfoot class="bg-gray-50 border-t-2 border-gray-200">
+                                <tr>
+                                    <td colspan="{{ $pengajuanPengadaan->status !== 'Draft' ? '8' : '5' }}" class="px-4 py-4 text-right font-bold text-gray-700">TOTAL KESELURUHAN (HPS)</td>
+                                    <td class="px-4 py-4 font-bold text-gray-900">{{ $formatRupiah($grandTotal) }}</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
 

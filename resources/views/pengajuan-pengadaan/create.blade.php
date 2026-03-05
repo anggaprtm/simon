@@ -39,7 +39,7 @@
                                         <th class="px-2 py-2 text-left">Spesifikasi</th>
                                         <th class="px-2 py-2 text-left">Jumlah Diajukan</th>
                                         <th class="px-2 py-2 text-left">Satuan</th>
-                                        <th class="px-2 py-2 text-left">Harga Satuan (Rp)</th>
+                                        <th class="px-2 py-2 text-left">Harga Satuan (HPS)</th>
                                         <th class="px-2 py-2 text-left">Link Referensi</th>
                                         <th class="px-2 py-2 text-left">Aksi</th>
                                     </tr>
