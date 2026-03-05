@@ -23,7 +23,7 @@
     <table>
         <tr>
             <td>Nomor</td>
-            <td>: {{ $pengajuan->nomor_surat ?? '.................................' . $pengajuan->created_at->year }}</td>
+            <td>: {{ $pengajuan->nomor_surat ?? '.................................'}}</td>
         </tr>
         <tr>
             <td>Tanggal</td>
