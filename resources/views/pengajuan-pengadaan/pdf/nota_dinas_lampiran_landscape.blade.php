@@ -10,22 +10,19 @@
         .text-bold { font-weight: bold; }
         .mt-4 { margin-top: 1rem; }
         .lampiran-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .lampiran-table th, .lampiran-table td { border: 1px solid black; padding: 5px; text-align: left; }
-        .lampiran-table th { background-color: #f7caac; text-align: center; }
+        .lampiran-table th, .lampiran-table td { border: 1px solid black; padding: 5px; text-align: left; vertical-align: top; }
+        .lampiran-table th { background-color: #f7caac; text-align: center; vertical-align: middle; }
         .text-right { text-align: right; }
 
         /* Link panjang biar patah rapi */
         .wrap { word-break: break-word; }
-
-        /* Spasi heading */
-        .mt-4{ margin-top:1rem; }
     </style>
 </head>
 <body>
     <p>Lampiran Nota Dinas Permohonan Usulan Bahan Habis Pakai Laboratorium {{ $pengajuan->programStudi->nama_program_studi }}</p>
     <table>
         <tr>
-            <td">Nomor</td>
+            <td>Nomor</td>
             <td>: {{ $pengajuan->nomor_surat ?? '.........../B/UN3.FTMM/RN/PL.00/' . $pengajuan->created_at->year }}</td>
         </tr>
         <tr>
@@ -40,36 +37,51 @@
     <table class="lampiran-table">
         <thead>
             <tr>
-                <th style="width:28px;">No</th>
+                <th style="width: 30px;">No</th>
                 <th>Nama Bahan</th>
-                <th style="width:110px;">Merek/Type</th>
                 <th>Spesifikasi</th>
-                <th style="width:50px;">Vol</th>
-                <th style="width:90px;">Jumlah</th>
-                <th style="width:110px;">Harga Satuan (HPS)</th>
-                <th style="width:120px;">Jumlah Harga (HPS)</th>
-                <th style="width:200px;">Link Referensi</th>
+                <th style="width: 80px;">Stok Saat Ini</th>
+                <th style="width: 70px;">Jumlah Diajukan</th>
+                <th style="width: 60px;">Satuan</th>
+                <th style="width: 100px;">Harga Satuan (HPS)</th>
+                <th style="width: 110px;">Harga Total</th>
+                <th style="width: 200px;">Link Referensi</th>
             </tr>
         </thead>
         <tbody>
             @php $totalKeseluruhan = 0; @endphp
             @foreach ($pengajuan->details as $detail)
+                @php
+                    // Ambil info stok jika bahan existing, jika baru tampilkan strip (-)
+                    $isExisting = !is_null($detail->id_bahan);
+                    $stokTeks = $isExisting && $detail->bahan ? ($detail->bahan->formatted_stock ?? ($detail->bahan->jumlah_stock + 0)) : '-';
+                    $jumlahFinal = $detail->approved_jumlah ?? $detail->jumlah;
+                @endphp
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
-                    <td>{{ $detail->display_nama_barang }}</td>
-                    <td>{{ $detail->merk }}</td>
-                    <td>{{ $detail->spesifikasi }}</td>
-                    <td class="text-center">{{ $detail->jumlah }}</td>
-                    <td class="text-center">{{ ($detail->approved_jumlah ?? $detail->jumlah) }} {{ $detail->satuan->nama_satuan }}</td>
+                    <td>
+                        {{ $detail->display_nama_barang }}
+                        @if(!$isExisting)
+                            <br><small style="color: #d97706;">(Bahan baru)</small>
+                        @endif
+                    </td>
+                    <td>{{ $detail->spesifikasi ?: '-' }}</td>
+                    <td class="text-center">{{ $stokTeks }}</td>
+                    <td class="text-center">{{ $jumlahFinal + 0 }}</td>
+                    <td class="text-center">{{ $detail->satuan->nama_satuan ?? '-' }}</td>
                     <td class="text-right">Rp{{ number_format($detail->harga_satuan, 0, ',', '.') }}</td>
-                    <td class="text-right">Rp{{ number_format(($detail->approved_jumlah ?? $detail->jumlah) * $detail->harga_satuan, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp{{ number_format($jumlahFinal * $detail->harga_satuan, 0, ',', '.') }}</td>
                     <td class="wrap">
-                        <a href="{{ $detail->link_referensi }}" style="color: blue; text-decoration: underline;">
-                            {{ $detail->link_referensi }}
-                        </a>
+                        @if($detail->link_referensi)
+                            <a href="{{ $detail->link_referensi }}" style="color: blue; text-decoration: underline;">
+                                {{ $detail->link_referensi }}
+                            </a>
+                        @else
+                            -
+                        @endif
                     </td>
                 </tr>
-                @php $totalKeseluruhan += (($detail->approved_jumlah ?? $detail->jumlah) * $detail->harga_satuan); @endphp
+                @php $totalKeseluruhan += ($jumlahFinal * $detail->harga_satuan); @endphp
             @endforeach
             <tr>
                 <td colspan="7" class="text-right text-bold">TOTAL KESELURUHAN</td>

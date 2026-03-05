@@ -97,7 +97,7 @@ class PengajuanPengadaanController extends Controller
 
     public function cetakNotaDinas(PengajuanPengadaan $pengajuanPengadaan)
     {
-        $pengajuanPengadaan->load(['user', 'programStudi', 'details.bahan', 'details.satuan']);
+        $pengajuanPengadaan->load(['user', 'programStudi', 'details.bahan.satuanRel', 'details.satuan']);
 
         $itemsPerPage = 20;
         $jumlah_lampiran_angka = (int) ceil(count($pengajuanPengadaan->details) / $itemsPerPage);
