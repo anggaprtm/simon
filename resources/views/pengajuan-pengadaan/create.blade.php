@@ -168,57 +168,71 @@
                     row.remove();
                 }
             });
-        });
 
-        const excelInput = document.getElementById('excel-file');
-        const btnImport = document.getElementById('btn-import-excel');
+            // --- BAGIAN IMPORT EXCEL DIMASUKKAN KE DALAM SINI ---
+            const excelInput = document.getElementById('excel-file');
+            const btnImport = document.getElementById('btn-import-excel');
 
-        btnImport.addEventListener('click', async function () {
-            if (!excelInput.files.length) {
-                alert('Silakan pilih file Excel terlebih dahulu!');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('file', excelInput.files[0]);
-            formData.append('_token', '{{ csrf_token() }}');
-
-            btnImport.textContent = 'Memproses...';
-            btnImport.disabled = true;
-
-            try {
-                const response = await fetch('{{ route("pengajuan-pengadaan.parse-excel") }}', {
-                    method: 'POST',
-                    body: formData,
-                    headers: { 'Accept': 'application/json' }
-                });
-
-                const result = await response.json();
-
-                if (response.ok && result.status === 'success') {
-                    if (result.data.length > 0) {
-                        // Hapus row kosong bawaan form
-                        container.innerHTML = ''; 
-                        
-                        // Looping data dari Excel dan render menjadi row
-                        result.data.forEach(item => {
-                            createRow(item);
-                        });
-                        
-                        alert(`Berhasil mengimpor ${result.data.length} item. Silakan review kembali sebelum diajukan.`);
-                    } else {
-                        alert('File Excel kosong atau format tidak sesuai.');
+            if (btnImport && excelInput) {
+                btnImport.addEventListener('click', async function () {
+                    if (!excelInput.files.length) {
+                        alert('Silakan pilih file Excel terlebih dahulu!');
+                        return;
                     }
-                } else {
-                    alert(result.message || 'Terjadi kesalahan saat memproses file.');
-                }
-            } catch (error) {
-                console.error(error);
-                alert('Terjadi kesalahan koneksi saat mengimpor data.');
-            } finally {
-                btnImport.textContent = 'Proses Import';
-                btnImport.disabled = false;
-                excelInput.value = ''; // Reset input file
+
+                    const formData = new FormData();
+                    formData.append('file', excelInput.files[0]);
+                    formData.append('_token', '{{ csrf_token() }}');
+
+                    btnImport.textContent = 'Memproses...';
+                    btnImport.disabled = true;
+
+                    try {
+                        const response = await fetch('{{ route("pengajuan-pengadaan.parse-excel") }}', {
+                            method: 'POST',
+                            body: formData,
+                            headers: { 'Accept': 'application/json' }
+                        });
+
+                        // KITA BACA SEBAGAI TEXT DULU BIAR BISA CEK ERRORNYA
+                        const responseText = await response.text(); 
+                        
+                        let result;
+                        try {
+                            result = JSON.parse(responseText); // Coba ubah ke JSON
+                        } catch (e) {
+                            // Kalau gagal jadi JSON, berarti Laravel nampilin halaman error HTML
+                            console.error("Respon dari server bukan JSON:", responseText);
+                            alert('Backend error 500! Coba tekan F12, buka tab Console untuk lihat detailnya, atau cek storage/logs/laravel.log');
+                            return;
+                        }
+
+                        if (response.ok && result.status === 'success') {
+                            if (result.data.length > 0) {
+                                // Hapus row kosong bawaan form
+                                container.innerHTML = ''; 
+                                
+                                // Looping data dari Excel dan render menjadi row
+                                result.data.forEach(item => {
+                                    createRow(item);
+                                });
+                                
+                                alert(`Berhasil mengimpor ${result.data.length} item. Silakan review kembali sebelum diajukan.`);
+                            } else {
+                                alert('File Excel kosong atau format tidak sesuai.');
+                            }
+                        } else {
+                            alert(result.message || 'Terjadi kesalahan saat memproses file.');
+                        }
+                    } catch (error) {
+                        console.error("Error Fetch:", error);
+                        alert('Terjadi kesalahan koneksi saat mengimpor data.');
+                    } finally {
+                        btnImport.textContent = 'Proses Import';
+                        btnImport.disabled = false;
+                        excelInput.value = ''; // Reset input file
+                    }
+                });
             }
         });
     </script>
