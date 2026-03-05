@@ -22,7 +22,6 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    // ... route profile ...
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -38,9 +37,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('pengajuan-pengadaan/{pengajuanPengadaan}/realisasi/{detailPengadaan}', [PengajuanPengadaanController::class, 'realisasiItem'])->name('pengajuan-pengadaan.realisasiItem');
     Route::post('pengajuan-pengadaan/{pengajuanPengadaan}/setujui', [PengajuanPengadaanController::class, 'setujui'])->name('pengajuan-pengadaan.setujui');
     Route::post('pengajuan-pengadaan/{pengajuanPengadaan}/tolak', [PengajuanPengadaanController::class, 'tolak'])->name('pengajuan-pengadaan.tolak');
-    Route::resource('pengajuan-pengadaan', PengajuanPengadaanController::class);
     Route::post('pengajuan-pengadaan/parse-excel', [PengajuanPengadaanController::class, 'parseExcel'])->name('pengajuan-pengadaan.parse-excel');
     Route::get('pengajuan-pengadaan/template-excel', [PengajuanPengadaanController::class, 'downloadTemplate'])->name('pengajuan-pengadaan.template-excel');
+    Route::resource('pengajuan-pengadaan', PengajuanPengadaanController::class);
 
     Route::prefix('transaksi')->name('transaksi.')->group(function() {
         // Rute untuk menampilkan form
