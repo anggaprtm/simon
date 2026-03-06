@@ -27,7 +27,7 @@
         </tr>
         <tr>
             <td>Tanggal</td>
-            <td>: {{ $pengajuan->created_at->isoFormat('D MMMM YYYY') }}</td>
+            <td>: {{ $pengajuan->tanggal_nota_dinas ? $pengajuan->tanggal_nota_dinas->isoFormat('D MMMM YYYY') : $pengajuan->created_at->isoFormat('D MMMM YYYY') }}</td>
         </tr>
     </table>
 

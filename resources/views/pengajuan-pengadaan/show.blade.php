@@ -35,6 +35,11 @@
                                     {{ $pengajuanPengadaan->nomor_surat ?? 'Belum diinput' }}
                                 </span>
                             </p>
+                            <p class="text-sm text-gray-600 mb-1">Tanggal Surat: 
+                                <span class="font-bold text-gray-900">
+                                    {{ $pengajuanPengadaan->tanggal_nota_dinas ? $pengajuanPengadaan->tanggal_nota_dinas->isoFormat('D MMMM YYYY') : $pengajuanPengadaan->created_at->isoFormat('D MMMM YYYY') . ' (Default)' }}
+                                </span>
+                            </p>
                             <p class="text-sm text-gray-600">Arsip Final: 
                                 @if($pengajuanPengadaan->file_nota_dinas)
                                     <a href="{{ asset('storage/' . $pengajuanPengadaan->file_nota_dinas) }}" target="_blank" class="text-green-600 font-bold hover:underline flex items-center inline-flex gap-1">
@@ -64,10 +69,17 @@
                             @endif
 
                             @if(Auth::id() === $pengajuanPengadaan->id_user && in_array($pengajuanPengadaan->status, ['Draft', 'Diajukan']))
-                                <button type="button" onclick="editNomorSurat()" class="bg-white border border-indigo-600 text-indigo-700 hover:bg-indigo-50 text-xs font-bold py-2 px-3 rounded shadow-sm flex items-center justify-center gap-2">
-                                    Update Nomor Surat
+                                <button type="button" onclick="editInfoSurat()" class="bg-white border border-indigo-600 text-indigo-700 hover:bg-indigo-50 text-xs font-bold py-2 px-3 rounded shadow-sm flex items-center justify-center gap-2">
+                                    Update Info Surat
                                 </button>
                             @endif
+                            
+                            <form id="form-update-surat" action="{{ route('pengajuan-pengadaan.updateAtributSurat', $pengajuanPengadaan->id) }}" method="POST" class="hidden">
+                                @csrf
+                                @method('PATCH')
+                                <input type="hidden" name="nomor_surat" id="input-nomor-surat">
+                                <input type="hidden" name="tanggal_nota_dinas" id="input-tanggal-surat">
+                            </form>
                         </div>
                     </div>
 
@@ -233,30 +245,37 @@
     </div>
     @push('scripts')
     <script>
-        function editNomorSurat() {
-            Swal.fire({
-                title: 'Update Nomor Surat',
-                text: 'Masukkan nomor surat dari sistem E-Office',
-                input: 'text',
-                inputValue: '{{ $pengajuanPengadaan->nomor_surat ?? "" }}',
-                inputPlaceholder: 'Contoh: 123/UN3.FTMM/RN/PL.00/2026',
-                showCancelButton: true,
-                confirmButtonText: 'Simpan Nomor',
-                cancelButtonText: 'Batal',
-                confirmButtonColor: '#4f46e5',
-                inputValidator: (value) => {
-                    if (!value) {
-                        return 'Nomor surat tidak boleh kosong!';
-                    }
+        function editInfoSurat() {
+        Swal.fire({
+            title: 'Update Info Surat',
+            html: `
+                <div class="text-left mb-3 mt-4">
+                    <label class="block text-sm font-medium text-gray-700">Nomor Surat</label>
+                    <input id="swal-nomor" class="swal2-input !w-full !m-0 !mt-1" style="height: 2.5rem;" placeholder="Kosongkan jika belum ada" value="{{ $pengajuanPengadaan->nomor_surat ?? '' }}">
+                </div>
+                <div class="text-left mb-2">
+                    <label class="block text-sm font-medium text-gray-700">Tanggal Nota Dinas</label>
+                    <input id="swal-tanggal" type="date" class="swal2-input !w-full !m-0 !mt-1" style="height: 2.5rem;" value="{{ $pengajuanPengadaan->tanggal_nota_dinas ? $pengajuanPengadaan->tanggal_nota_dinas->format('Y-m-d') : $pengajuanPengadaan->created_at->format('Y-m-d') }}">
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Simpan',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#4f46e5',
+            preConfirm: () => {
+                return {
+                    nomor: document.getElementById('swal-nomor').value,
+                    tanggal: document.getElementById('swal-tanggal').value
                 }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Masukkan value dari SweetAlert ke input hidden lalu submit formnya
-                    document.getElementById('input-nomor-surat').value = result.value;
-                    document.getElementById('form-update-nomor').submit();
-                }
-            });
-        }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('input-nomor-surat').value = result.value.nomor;
+                document.getElementById('input-tanggal-surat').value = result.value.tanggal;
+                document.getElementById('form-update-surat').submit();
+            }
+        });
+    }
     </script>
     @endpush
 </x-app-layout>

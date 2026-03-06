@@ -9,6 +9,9 @@ class PengajuanPengadaan extends Model
     use HasFactory;
     protected $table = 'pengajuan_pengadaans';
     protected $fillable = ['id_user', 'id_program_studi', 'tahun_ajaran', 'semester', 'nomor_surat', 'status','file_nota_dinas'];
+    protected $casts = [
+        'tanggal_nota_dinas' => 'date',
+    ];
 
     public function user()
     {

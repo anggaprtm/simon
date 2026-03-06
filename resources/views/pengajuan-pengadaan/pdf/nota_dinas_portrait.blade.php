@@ -51,7 +51,7 @@
         <p>Demikian atas perhatiannya, kami sampaikan terima kasih.</p>
 
         <div class="signature-section" style="width:50%; float:right; text-align:center;">
-            <p>{{ $pengajuan->created_at->isoFormat('D MMMM YYYY') }}</p>
+            <p>{{ $pengajuan->tanggal_nota_dinas ? $pengajuan->tanggal_nota_dinas->isoFormat('D MMMM YYYY') : $pengajuan->created_at->isoFormat('D MMMM YYYY') }}</p>
             <p>Koordinator Program Studi,</p>
             <div style="height:80px;"></div>
             

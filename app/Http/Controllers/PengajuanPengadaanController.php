@@ -263,22 +263,23 @@ class PengajuanPengadaanController extends Controller
             ->with('success', 'Pengajuan berhasil diajukan dan siap direview Fakultas.');
     }
 
-    public function updateNomorSurat(Request $request, PengajuanPengadaan $pengajuanPengadaan)
+    public function updateAtributSurat(Request $request, PengajuanPengadaan $pengajuanPengadaan)
     {
-        // Hanya pembuat draft yang bisa update nomor surat
         if (Auth::id() !== $pengajuanPengadaan->id_user) {
             abort(403, 'AKSI TIDAK DIIZINKAN.');
         }
 
         $request->validate([
-            'nomor_surat' => 'required|string|max:100',
+            'nomor_surat' => 'nullable|string|max:100',
+            'tanggal_nota_dinas' => 'nullable|date',
         ]);
 
         $pengajuanPengadaan->update([
-            'nomor_surat' => $request->nomor_surat
+            'nomor_surat' => $request->nomor_surat,
+            'tanggal_nota_dinas' => $request->tanggal_nota_dinas
         ]);
 
-        return redirect()->back()->with('success', 'Nomor surat berhasil disimpan.');
+        return redirect()->back()->with('success', 'Informasi surat berhasil diperbarui.');
     }
 
     public function realisasiForm(PengajuanPengadaan $pengajuanPengadaan)
@@ -682,7 +683,7 @@ class PengajuanPengadaanController extends Controller
             'Content-Disposition' => 'attachment; filename="Template_Pengajuan_Pengadaan.xlsx"',
         ]);
     }
-    
+
     public function uploadNotaDinas(Request $request, PengajuanPengadaan $pengajuanPengadaan)
     {
         // Yang bisa upload adalah laboran pembuat atau KPS prodi tersebut
