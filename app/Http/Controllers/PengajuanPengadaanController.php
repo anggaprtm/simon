@@ -574,7 +574,18 @@ class PengajuanPengadaanController extends Controller
                 $jumlah = (float)($row[2] ?? 0);
                 $namaSatuan = strtolower(trim((string)($row[3] ?? '')));
                 $hargaSatuan = (int)($row[4] ?? 0);
-                $link = str_replace(' ', '', trim((string)($row[5] ?? '')));
+                // Ambil raw link dan buang spasi yang tidak sengaja terbawa
+                $rawLink = str_replace(' ', '', trim((string)($row[5] ?? '')));
+                $link = $rawLink;
+
+                // Trik: Potong parameter URL (seperti ?extParam=... dari Tokopedia/Shopee)
+                if (!empty($rawLink) && filter_var($rawLink, FILTER_VALIDATE_URL)) {
+                    $parsedUrl = parse_url($rawLink);
+                    // Rakit ulang hanya bagian skema (https), host (www.tokopedia.com), dan path (/indocart/...)
+                    if (isset($parsedUrl['scheme']) && isset($parsedUrl['host']) && isset($parsedUrl['path'])) {
+                        $link = $parsedUrl['scheme'] . '://' . $parsedUrl['host'] . $parsedUrl['path'];
+                    }
+                }
 
                 // Cocokkan ID Satuan
                 $id_satuan = $satuans->has($namaSatuan) ? $satuans[$namaSatuan]->id : '';
