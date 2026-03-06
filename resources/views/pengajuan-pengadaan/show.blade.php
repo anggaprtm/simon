@@ -159,17 +159,21 @@
                                                 <div class="mt-1 text-green-700">Stok saat ini: {{ $stokSaatIni }}</div>
                                             @endif
                                         </td>
-                                        <td class="px-4 py-3">{{ $formatQty($detail->jumlah) }} {{ $detail->satuan->nama_satuan }}</td>
+                                        
+                                        {{-- Tampilan jumlah diajukan (diperbarui dengan floatval) --}}
+                                        <td class="px-4 py-3">{{ floatval($detail->jumlah) }} {{ $detail->satuan->nama_satuan }}</td>
+                                        
                                         @if($pengajuanPengadaan->status !== 'Draft')
                                             <td class="px-4 py-3">
                                                 @can('manage-pengajuan')
                                                     @if($pengajuanPengadaan->status === 'Diajukan')
-                                                        <input type="number" name="approval_items[{{ $detail->id }}][approved_jumlah]" step="any" min="0" max="{{ $detail->jumlah }}" value="{{ $detail->jumlah }}" class="w-28 border-gray-300 rounded-md shadow-sm">
+                                                        {{-- Input jumlah persetujuan (max dan value diperbarui dengan floatval) --}}
+                                                        <input type="number" name="approval_items[{{ $detail->id }}][approved_jumlah]" step="any" min="0" max="{{ floatval($detail->jumlah) }}" value="{{ floatval($detail->jumlah) }}" class="w-28 border-gray-300 rounded-md shadow-sm">
                                                     @else
-                                                        {{ $formatQty($detail->approved_jumlah) }} {{ $detail->satuan->nama_satuan }}
+                                                        {{ floatval($detail->approved_jumlah) }} {{ $detail->satuan->nama_satuan }}
                                                     @endif
                                                 @else
-                                                    {{ $formatQty($detail->approved_jumlah) }} {{ $detail->satuan->nama_satuan }}
+                                                    {{ floatval($detail->approved_jumlah) }} {{ $detail->satuan->nama_satuan }}
                                                 @endcan
                                             </td>
                                             <td class="px-4 py-3">
