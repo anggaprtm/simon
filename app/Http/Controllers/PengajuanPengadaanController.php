@@ -574,7 +574,7 @@ class PengajuanPengadaanController extends Controller
                 $jumlah = (float)($row[2] ?? 0);
                 $namaSatuan = strtolower(trim((string)($row[3] ?? '')));
                 $hargaSatuan = (int)($row[4] ?? 0);
-                $link = trim((string)($row[5] ?? ''));
+                $link = str_replace(' ', '', trim((string)($row[5] ?? '')));
 
                 // Cocokkan ID Satuan
                 $id_satuan = $satuans->has($namaSatuan) ? $satuans[$namaSatuan]->id : '';

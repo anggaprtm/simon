@@ -7,6 +7,16 @@
         <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
+                    @if ($errors->any())
+                        <div class="mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-sm">
+                            <p class="font-bold">Gagal menyimpan pengajuan! Silakan perbaiki kesalahan berikut:</p>
+                            <ul class="mt-2 list-disc list-inside text-sm">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ str_replace('items.', 'Baris item ke-', $error) }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
                     <form action="{{ route('pengajuan-pengadaan.update', $pengajuanPengadaan) }}" method="POST">
                         @csrf
                         @method('PUT')
