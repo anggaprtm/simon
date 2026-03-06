@@ -83,11 +83,6 @@
                         </div>
                     </div>
 
-                    <form id="form-update-nomor" action="{{ route('pengajuan-pengadaan.updateNomor', $pengajuanPengadaan->id) }}" method="POST" class="hidden">
-                        @csrf
-                        @method('PATCH')
-                        <input type="hidden" name="nomor_surat" id="input-nomor-surat">
-                    </form>
                     @if (session('success'))
                         <div class="mb-4 rounded border border-green-300 bg-green-50 p-3 text-green-700">{{ session('success') }}</div>
                     @endif
