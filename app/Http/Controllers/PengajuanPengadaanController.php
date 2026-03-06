@@ -272,6 +272,11 @@ class PengajuanPengadaanController extends Controller
         $request->validate([
             'nomor_surat' => 'nullable|string|max:100',
             'tanggal_nota_dinas' => 'nullable|date',
+        ], [
+            'file_nota_dinas.required' => 'Pilih file PDF Nota Dinas terlebih dahulu sebelum mengunggah.',
+            'file_nota_dinas.mimes'    => 'Format file ditolak! Arsip wajib berupa PDF.',
+            'file_nota_dinas.max'      => 'Ukuran file terlalu besar! Maksimal ukuran PDF adalah 5MB.',
+            'file_nota_dinas.uploaded' => 'File gagal diproses oleh server. Pastikan ukuran file tidak melebihi batas sistem atau coba lagi.',
         ]);
 
         $pengajuanPengadaan->update([
