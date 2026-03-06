@@ -682,4 +682,33 @@ class PengajuanPengadaanController extends Controller
             'Content-Disposition' => 'attachment; filename="Template_Pengajuan_Pengadaan.xlsx"',
         ]);
     }
+    
+    public function uploadNotaDinas(Request $request, PengajuanPengadaan $pengajuanPengadaan)
+    {
+        // Yang bisa upload adalah laboran pembuat atau KPS prodi tersebut
+        $user = Auth::user();
+        if ($user->id !== $pengajuanPengadaan->id_user && !($user->role === 'kps' && $user->id_program_studi === $pengajuanPengadaan->id_program_studi)) {
+            abort(403, 'AKSI TIDAK DIIZINKAN.');
+        }
+
+        $request->validate([
+            'file_nota_dinas' => 'required|file|mimes:pdf|max:5120', // Maksimal 5MB, format PDF
+        ]);
+
+        if ($request->hasFile('file_nota_dinas')) {
+            // Hapus file lama jika sebelumnya sudah pernah upload (replace file)
+            if ($pengajuanPengadaan->file_nota_dinas && Storage::disk('public')->exists($pengajuanPengadaan->file_nota_dinas)) {
+                Storage::disk('public')->delete($pengajuanPengadaan->file_nota_dinas);
+            }
+
+            // Simpan file baru ke folder storage/app/public/nota_dinas
+            $path = $request->file('file_nota_dinas')->store('nota_dinas', 'public');
+            
+            $pengajuanPengadaan->update([
+                'file_nota_dinas' => $path
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Arsip Nota Dinas berhasil diunggah.');
+    }
 }

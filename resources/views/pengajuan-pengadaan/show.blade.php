@@ -30,19 +30,45 @@
                     <div class="mb-6 bg-indigo-50 p-4 rounded-lg border border-indigo-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
                             <p class="text-sm text-gray-600 mb-1">Tahun Ajaran: <span class="font-semibold text-gray-900">{{ $pengajuanPengadaan->tahun_ajaran }} (Semester {{ $pengajuanPengadaan->semester }})</span></p>
-                            <p class="text-sm text-gray-600">Nomor Surat: 
+                            <p class="text-sm text-gray-600 mb-1">Nomor Surat: 
                                 <span class="font-bold {{ $pengajuanPengadaan->nomor_surat ? 'text-indigo-700' : 'text-red-500' }}">
                                     {{ $pengajuanPengadaan->nomor_surat ?? 'Belum diinput' }}
                                 </span>
                             </p>
+                            <p class="text-sm text-gray-600">Arsip Final: 
+                                @if($pengajuanPengadaan->file_nota_dinas)
+                                    <a href="{{ asset('storage/' . $pengajuanPengadaan->file_nota_dinas) }}" target="_blank" class="text-green-600 font-bold hover:underline flex items-center inline-flex gap-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                        Lihat Dokumen
+                                    </a>
+                                @else
+                                    <span class="text-amber-600 font-semibold text-xs bg-amber-100 px-2 py-0.5 rounded">Belum Ada File</span>
+                                @endif
+                            </p>
                         </div>
                         
-                        @if(Auth::id() === $pengajuanPengadaan->id_user && in_array($pengajuanPengadaan->status, ['Draft', 'Diajukan']))
-                            <button type="button" onclick="editNomorSurat()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 px-4 rounded shadow-sm flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                Update Nomor Surat
-                            </button>
-                        @endif
+                        <div class="flex flex-col gap-2 w-full md:w-auto">
+                            @if((Auth::id() === $pengajuanPengadaan->id_user || Auth::user()->role === 'kps') && in_array($pengajuanPengadaan->status, ['Draft', 'Diajukan', 'Disetujui', 'Selesai']))
+                                <form action="{{ route('pengajuan-pengadaan.uploadNota', $pengajuanPengadaan->id) }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-2">
+                                    @csrf
+                                    <div class="flex items-center gap-2">
+                                        <input type="file" name="file_nota_dinas" accept=".pdf" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-white file:text-indigo-700 hover:file:bg-indigo-100 border border-gray-300 rounded cursor-pointer" required>
+                                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 px-3 rounded shadow-sm whitespace-nowrap">
+                                            Unggah Arsip
+                                        </button>
+                                    </div>
+                                    @error('file_nota_dinas')
+                                        <span class="text-red-500 text-xs">{{ $message }}</span>
+                                    @enderror
+                                </form>
+                            @endif
+
+                            @if(Auth::id() === $pengajuanPengadaan->id_user && in_array($pengajuanPengadaan->status, ['Draft', 'Diajukan']))
+                                <button type="button" onclick="editNomorSurat()" class="bg-white border border-indigo-600 text-indigo-700 hover:bg-indigo-50 text-xs font-bold py-2 px-3 rounded shadow-sm flex items-center justify-center gap-2">
+                                    Update Nomor Surat
+                                </button>
+                            @endif
+                        </div>
                     </div>
 
                     <form id="form-update-nomor" action="{{ route('pengajuan-pengadaan.updateNomor', $pengajuanPengadaan->id) }}" method="POST" class="hidden">
