@@ -50,43 +50,36 @@ class LaporanController extends Controller
     {
         $user = Auth::user();
 
-        $availableYears = PeriodeStok::select('tahun_periode')->distinct()->orderBy('tahun_periode', 'desc')->pluck('tahun_periode');
-        // Tambahkan fallback date('Y') jaga-jaga kalau database periode_stoks masih kosong
+        $availableYears = \App\Models\PeriodeStok::select('tahun_periode')->distinct()->orderBy('tahun_periode', 'desc')->pluck('tahun_periode');
         $tahunAktif = $availableYears->first() ?? date('Y'); 
 
-        // Default ke tahun aktif jika tidak ada tahun yang dipilih
-        $selectedTahun = $request->input('tahun', $tahunAktif);
-        
-        // Variabel bulan ini digunakan HANYA untuk tampilan cetak/header, BUKAN untuk filter query stok
-        $selectedBulan = $request->input('bulan', date('n'));        
+        // Gunakan exists() agar aman dari bug URL kosong
+        $selectedTahun = $request->exists('tahun') ? $request->input('tahun') : $tahunAktif;
+        $selectedBulan = $request->input('bulan');        
         $selectedProdiId = $request->input('prodi_id');
 
-        // Ambil data Program Studi untuk filter
         $programStudis = [];
         if (in_array($user->role, ['superadmin', 'fakultas'])) {
-            $programStudis = ProgramStudi::orderBy('nama_program_studi')->get();
+            $programStudis = \App\Models\ProgramStudi::orderBy('nama_program_studi')->get();
         }
 
         if ($selectedTahun == $tahunAktif) {
-            // JIKA MELIHAT PERIODE AKTIF, data diambil dari tabel 'bahans' (real-time)
-            $query = Bahan::with(['programStudi', 'gudang', 'satuanRel', 'periodeAktif']);
+            // PERIODE AKTIF (Tabel Bahan)
+            $query = \App\Models\Bahan::with(['programStudi', 'gudang', 'satuanRel', 'periodeAktif']);
             
-            // Terapkan filter prodi (Pembaruan: KPS dimasukkan)
             if (in_array($user->role, ['superadmin', 'fakultas']) && $selectedProdiId) {
                 $query->where('id_program_studi', $selectedProdiId);
             } elseif (in_array($user->role, ['laboran', 'kps'])) { 
                 $query->where('id_program_studi', $user->id_program_studi);
             }
             
-            // UBAH: Gunakan paginate, bukan get()
-            $laporanData = $query->orderBy('nama_bahan')->paginate(15)->withQueryString();
+            $query->orderBy('nama_bahan'); // Hanya siapkan query, jangan dieksekusi dulu
 
         } else {
-            // JIKA MELIHAT PERIODE LAMA (SUDAH DITUTUP), data diambil dari tabel 'periode_stoks'
-            $query = PeriodeStok::with(['bahan.programStudi', 'bahan.gudang', 'bahan.satuanRel'])
-                                ->where('tahun_periode', $selectedTahun);
-                                
-            // Terapkan filter prodi (Pembaruan: KPS dimasukkan)
+            // PERIODE LAMA (Tabel PeriodeStok)
+            $query = \App\Models\PeriodeStok::with(['bahan.programStudi', 'bahan.gudang', 'bahan.satuanRel'])
+                                            ->where('tahun_periode', $selectedTahun);
+                                            
             if (in_array($user->role, ['superadmin', 'fakultas']) && $selectedProdiId) {
                 $query->whereHas('bahan', function ($q) use ($selectedProdiId) {
                     $q->where('id_program_studi', $selectedProdiId);
@@ -97,17 +90,25 @@ class LaporanController extends Controller
                     $q->where('id_program_studi', $prodiId);
                 });
             }
-            
-            // UBAH: Gunakan paginate, bukan get()
-            $laporanData = $query->paginate(15)->withQueryString();
         }
 
+        // ==========================================
+        // EKSEKUSI QUERY DIBEDAKAN (PRINT VS WEB)
+        // ==========================================
+        
         if ($request->has('print')) {
-            // Jangan lupa passing selectedBulan ke view print
+            // Jika Print: Ambil SEMUA data tanpa batasan 15 baris
+            $laporanData = $query->get(); 
             return view('laporan.print.stok', compact('laporanData', 'selectedTahun', 'selectedBulan', 'tahunAktif', 'programStudis', 'selectedProdiId'));
         }
 
-        // Jangan lupa passing selectedBulan ke view
+        // Jika Web: Gunakan Paginate & Appends (Cegah bug filter hilang)
+        $laporanData = $query->paginate(15)->appends([
+            'prodi_id' => $selectedProdiId ?? '',
+            'tahun'    => $selectedTahun ?? '',
+            'bulan'    => $selectedBulan ?? '',
+        ]);
+
         return view('laporan.stok', compact('laporanData', 'selectedTahun', 'selectedBulan', 'tahunAktif', 'programStudis', 'availableYears', 'selectedProdiId'));
     }
 

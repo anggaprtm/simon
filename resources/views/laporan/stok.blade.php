@@ -65,11 +65,23 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="text-align: center">Kode</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="text-align: center">Nama Bahan</th>
                                     @if($selectedTahun == $tahunAktif)
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="text-align: center">Stok Awal Periode</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="text-align: center">Stok Saat Ini</th>
+                                        {{-- Tampilan untuk periode aktif, $item adalah model Bahan --}}
+                                        <td style="text-align: center">{{ $item->kode_bahan }}</td>
+                                        <td>{!! $item->nama_bahan_html ?? '<span class="text-red-500 italic">Terhapus</span>' !!}</td>
+                                        <td style="text-align: center">{{ $formatStock($item->periodeAktif?->stok_awal) }}</td>
+                                        <td class="font-bold" style="text-align: center">{{ $formatStock($item->jumlah_stock) }}</td>
+                                        <td style="text-align: center">{{ $item->satuanRel?->nama_satuan ?? '-' }}</td>
+                                        <td style="text-align: center">{{ $item->gudang?->nama_gudang ?? '-' }}</td>
+                                        <td style="text-align: center">{{ $item->programStudi?->kode_program_studi ?? '-' }}</td>
                                     @else
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="text-align: center">Stok Awal</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="text-align: center">Stok Akhir</th>
+                                        {{-- Tampilan untuk periode tertutup, $item adalah model PeriodeStok --}}
+                                        <td style="text-align: center">{{ $item->bahan?->kode_bahan ?? '-' }}</td>
+                                        <td>{!! $item->bahan?->nama_bahan_html ?? '<span class="text-red-500 italic">Terhapus</span>' !!}</td>
+                                        <td style="text-align: center">{{ $formatStock($item->stok_awal) }}</td>
+                                        <td class="font-bold" style="text-align: center">{{ $formatStock($item->stok_akhir) }}</td>
+                                        <td style="text-align: center">{{ $item->bahan?->satuanRel?->nama_satuan ?? '-' }}</td>
+                                        <td style="text-align: center">{{ $item->bahan?->gudang?->nama_gudang ?? '-' }}</td>
+                                        <td style="text-align: center">{{ $item->bahan?->programStudi?->kode_program_studi ?? '-' }}</td>
                                     @endif
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="text-align: center">Satuan</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="text-align: center">Gudang</th>
