@@ -125,4 +125,84 @@ class LaporanController extends Controller
 
         return view('laporan.transaksi', compact('transaksis', 'programStudis', 'availableYears', 'selectedTahun', 'selectedProdiId', 'tanggalMulai', 'tanggalSelesai'));
     }
+    public function arsip(Request $request)
+    {
+        $user = Auth::user();
+        $selectedTahun = $request->input('tahun', date('Y'));
+        
+        $query = ArsipLaporan::with(['programStudi', 'user'])
+                    ->where('tahun', $selectedTahun);
+
+        // Filter berdasarkan akses
+        if (in_array($user->role, ['superadmin', 'fakultas'])) {
+            $programStudis = ProgramStudi::orderBy('nama_program_studi')->get();
+            if ($request->filled('prodi_id')) {
+                $query->where('id_program_studi', $request->prodi_id);
+            }
+        } else {
+            $programStudis = [];
+            $query->where('id_program_studi', $user->id_program_studi);
+        }
+
+        $arsips = $query->orderBy('bulan', 'desc')->get();
+        
+        // Buat daftar tahun (5 tahun terakhir) untuk dropdown
+        $years = range(date('Y'), date('Y') - 5);
+
+        return view('laporan.arsip', compact('arsips', 'programStudis', 'selectedTahun', 'years'));
+    }
+
+    public function storeArsip(Request $request)
+    {
+        $request->validate([
+            'jenis_laporan' => 'required|in:stok,transaksi',
+            'bulan' => 'required|integer|min:1|max:12',
+            'tahun' => 'required|integer',
+            'file_laporan' => 'required|file|mimes:pdf|max:5120', // Maks 5MB
+        ]);
+
+        $user = Auth::user();
+        $prodiId = $user->role === 'laboran' || $user->role === 'kps' ? $user->id_program_studi : $request->id_program_studi;
+
+        if (!$prodiId) {
+            return back()->with('error', 'Gagal: Program Studi tidak ditemukan.');
+        }
+
+        // Cek apakah arsip untuk bulan & tahun ini sudah ada
+        $existingArsip = ArsipLaporan::where([
+            'id_program_studi' => $prodiId,
+            'jenis_laporan' => $request->jenis_laporan,
+            'bulan' => $request->bulan,
+            'tahun' => $request->tahun,
+        ])->first();
+
+        // Upload file baru
+        $path = $request->file('file_laporan')->store('arsip_laporan', 'public');
+
+        if ($existingArsip) {
+            // Hapus file lama jika ada
+            if (Storage::disk('public')->exists($existingArsip->file_path)) {
+                Storage::disk('public')->delete($existingArsip->file_path);
+            }
+            // Update data
+            $existingArsip->update([
+                'file_path' => $path,
+                'id_user' => $user->id
+            ]);
+            $pesan = 'Arsip laporan berhasil diperbarui.';
+        } else {
+            // Buat data baru
+            ArsipLaporan::create([
+                'id_program_studi' => $prodiId,
+                'id_user' => $user->id,
+                'jenis_laporan' => $request->jenis_laporan,
+                'bulan' => $request->bulan,
+                'tahun' => $request->tahun,
+                'file_path' => $path,
+            ]);
+            $pesan = 'Arsip laporan berhasil diunggah.';
+        }
+
+        return back()->with('success', $pesan);
+    }
 }

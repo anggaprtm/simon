@@ -8,7 +8,7 @@
 
     <div class="py-12">
         <div class="max-w-full mx-auto sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <a href="{{ route('laporan.stok') }}" class="block p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100">
                     <h3 class="mb-2 text-2xl font-bold tracking-tight text-gray-900">Laporan Stok Bahan</h3>
                     <p class="font-normal text-gray-700">Lihat rekapitulasi jumlah stok semua bahan laboratorium pada saat ini. Dapat difilter berdasarkan program studi.</p>
@@ -16,7 +16,12 @@
                 
                 <a href="{{ route('laporan.transaksi') }}" class="block p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100">
                     <h3 class="mb-2 text-2xl font-bold tracking-tight text-gray-900">Laporan Riwayat Transaksi</h3>
-                    <p class="font-normal text-gray-700">Lihat semua catatan aktivitas barang masuk dan keluar. Dapat difilter berdasarkan program studi dan rentang tanggal.</p>
+                    <p class="font-normal text-gray-700">Lihat histori lengkap keluar/masuk bahan lab serta penyesuaian stok opname dari waktu ke waktu.</p>
+                </a>
+
+                <a href="{{ route('laporan.arsip') }}" class="block p-6 bg-indigo-50 border border-indigo-200 rounded-lg shadow hover:bg-indigo-100">
+                    <h3 class="mb-2 text-2xl font-bold tracking-tight text-indigo-900">Arsip Laporan Bulanan</h3>
+                    <p class="font-normal text-indigo-700">Ruang unggah dan rekam jejak PDF laporan bulanan yang telah ditandatangani untuk keperluan audit legal.</p>
                 </a>
             </div>
         </div>

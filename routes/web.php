@@ -62,6 +62,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [LaporanController::class, 'index'])->name('index'); // Menu Laporan
         Route::get('/stok', [LaporanController::class, 'stok'])->name('stok'); // Laporan Stok
         Route::get('/transaksi', [LaporanController::class, 'transaksi'])->name('transaksi'); // Laporan Transaksi
+        Route::get('/arsip', [LaporanController::class, 'arsip'])->name('arsip');
+        Route::post('/arsip/store', [LaporanController::class, 'storeArsip'])->name('arsip.store');
     });
 
     Route::prefix('penyesuaian')->name('penyesuaian.')->group(function() {
