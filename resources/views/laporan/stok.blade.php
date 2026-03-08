@@ -95,26 +95,26 @@
                                         @if($selectedTahun == $tahunAktif)
                                             {{-- Tampilan untuk periode aktif, $item adalah model Bahan --}}
                                             <td style="text-align: center">{{ $item->kode_bahan }}</td>
-                                            <td>{!! $item->nama_bahan_html !!}</td>
-                                            <td style="text-align: center">{{ $formatStock($item->periodeAktif->stok_awal) }}</td>
+                                            <td>{!! $item->nama_bahan_html ?? '<span class="text-red-500 italic">Terhapus</span>' !!}</td>
+                                            <td style="text-align: center">{{ $formatStock($item->periodeAktif?->stok_awal) }}</td>
                                             <td class="font-bold" style="text-align: center">{{ $formatStock($item->jumlah_stock) }}</td>
-                                            <td style="text-align: center">{{ $item->satuanRel->nama_satuan ?? '-' }}</td>
-                                            <td style="text-align: center">{{ $item->gudang->nama_gudang ?? '-' }}</td>
-                                            <td style="text-align: center">{{ $item->programStudi->kode_program_studi ?? '-' }}</td>
+                                            <td style="text-align: center">{{ $item->satuanRel?->nama_satuan ?? '-' }}</td>
+                                            <td style="text-align: center">{{ $item->gudang?->nama_gudang ?? '-' }}</td>
+                                            <td style="text-align: center">{{ $item->programStudi?->kode_program_studi ?? '-' }}</td>
                                         @else
                                             {{-- Tampilan untuk periode tertutup, $item adalah model PeriodeStok --}}
-                                            <td>{{ $item->bahan->kode_bahan }}</td>
-                                            <td>{!! $item->bahan->nama_bahan_html !!}</td>
-                                            <td>{{ $formatStock($item->stok_awal) }}</td>
-                                            <td class="font-bold">{{ $formatStock($item->stok_akhir) }}</td>
-                                            <td>{{ $item->bahan->satuanRel->nama_satuan ?? '-' }}</td>
-                                            <td>{{ $item->bahan->gudang->nama_gudang ?? '-' }}</td>
-                                            <td>{{ $item->bahan->programStudi->kode_program_studi ?? '-' }}</td>
+                                            <td style="text-align: center">{{ $item->bahan?->kode_bahan ?? '-' }}</td>
+                                            <td>{!! $item->bahan?->nama_bahan_html ?? '<span class="text-red-500 italic">Terhapus</span>' !!}</td>
+                                            <td style="text-align: center">{{ $formatStock($item->stok_awal) }}</td>
+                                            <td class="font-bold" style="text-align: center">{{ $formatStock($item->stok_akhir) }}</td>
+                                            <td style="text-align: center">{{ $item->bahan?->satuanRel?->nama_satuan ?? '-' }}</td>
+                                            <td style="text-align: center">{{ $item->bahan?->gudang?->nama_gudang ?? '-' }}</td>
+                                            <td style="text-align: center">{{ $item->bahan?->programStudi?->kode_program_studi ?? '-' }}</td>
                                         @endif
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="text-center py-4">Data tidak ditemukan.</td>
+                                        <td colspan="7" class="text-center py-4 text-gray-500 italic">Data stok tidak ditemukan untuk filter yang dipilih.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
