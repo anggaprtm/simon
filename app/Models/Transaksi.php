@@ -52,7 +52,7 @@ class Transaksi extends Model
     public function getFormattedJumlahAttribute(): string
     {
         $jumlah = $this->attributes['jumlah'] ?? 0;
-        $namaSatuan = $this->bahan->satuanRel->nama_satuan ?? ''; // ambil dari relasi bahan
+        $namaSatuan = $this->bahan?->satuanRel?->nama_satuan ?? ''; // ambil dari relasi bahan
         $namaSatuanLower = strtolower($namaSatuan);
 
         // Konversi ml -> L dan gr -> Kg
@@ -81,7 +81,7 @@ class Transaksi extends Model
     public function getFormattedStockSesudahAttribute(): string
     {
         $jumlah = $this->attributes['stock_sesudah'] ?? 0;
-        $namaSatuan = $this->bahan->satuanRel->nama_satuan ?? '';
+        $namaSatuan = $this->bahan?->satuanRel?->nama_satuan ?? '';
         $namaSatuanLower = strtolower($namaSatuan);
 
         // Konversi ml -> L dan gr -> Kg
