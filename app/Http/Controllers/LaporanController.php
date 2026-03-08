@@ -167,7 +167,13 @@ class LaporanController extends Controller
             return view('laporan.print.transaksi', compact('transaksis', 'programStudis', 'selectedProdiId', 'selectedBulan', 'selectedTahun', 'tanggalMulai', 'tanggalSelesai'));
         }
 
-        $transaksis = $query->paginate(15)->withQueryString();
+        $transaksis = $query->paginate(15)->appends([
+            'prodi_id' => $selectedProdiId,
+            'bulan' => $selectedBulan,
+            'tahun' => $selectedTahun,
+            'tanggal_mulai' => $tanggalMulai,
+            'tanggal_selesai' => $tanggalSelesai
+        ]);
 
         return view('laporan.transaksi', compact('transaksis', 'programStudis', 'availableYears', 'selectedBulan', 'selectedTahun', 'selectedProdiId', 'tanggalMulai', 'tanggalSelesai'));
     }
