@@ -115,24 +115,25 @@ class LaporanController extends Controller
     {
         $user = Auth::user();
 
-        // 1. Ambil semua tahun unik yang ada di catatan periode untuk filter dropdown
+        // 1. Ambil semua tahun unik untuk filter
         $availableYears = \App\Models\PeriodeStok::select('tahun_periode')->distinct()->orderBy('tahun_periode', 'desc')->pluck('tahun_periode');
         
-        // 2. Ambil input dari filter form
+        // FIX BUG 1: Hilangkan default date('n') agar "Semua Bulan" benar-benar muncul dari awal
+        $selectedBulan = $request->input('bulan'); 
+        
+        // FIX BUG 2: Tangani "Semua Tahun" dengan aman. Jika URL tidak punya parameter 'tahun' sama sekali, pakai tahun ini. Jika ada tapi kosong, biarkan kosong.
+        $selectedTahun = $request->has('tahun') ? $request->input('tahun') : date('Y'); 
+
         $selectedProdiId = $request->input('prodi_id');
-        $selectedBulan = $request->input('bulan', date('n'));
-        $selectedTahun = $request->input('tahun', date('Y')); // Tambahkan default date('Y') agar tidak null
         $tanggalMulai = $request->input('tanggal_mulai');
         $tanggalSelesai = $request->input('tanggal_selesai');
 
         $query = \App\Models\Transaksi::with(['bahan.programStudi', 'user']);
 
-        // 3. Filter Tanggal: Rentang Tanggal VS Bulan & Tahun
+        // 3. Filter Tanggal
         if ($request->filled('tanggal_mulai') && $request->filled('tanggal_selesai')) {
-            // Jika pakai rentang tanggal spesifik, eksekusi ini dan abaikan bulan/tahun
             $query->whereBetween('tanggal_transaksi', [$tanggalMulai, $tanggalSelesai . ' 23:59:59']);
         } else {
-            // Jika rentang tanggal kosong, gunakan filter dropdown tahun & bulan
             if ($selectedTahun) {
                 $query->whereYear('tanggal_transaksi', $selectedTahun);
             }
@@ -141,36 +142,33 @@ class LaporanController extends Controller
             }
         }
 
-        // 4. Filter Otoritas (Superadmin/Fakultas vs Laboran/KPS)
+        // 4. Filter Otoritas Prodi
         $programStudis = [];
         if (in_array($user->role, ['superadmin', 'fakultas'])) {
             $programStudis = \App\Models\ProgramStudi::orderBy('nama_program_studi')->get();
             if ($request->filled('prodi_id')) {
-                $prodiId = $request->prodi_id;
-                $query->whereHas('bahan', function ($q) use ($prodiId) {
-                    $q->where('id_program_studi', $prodiId);
+                $query->whereHas('bahan', function ($q) use ($request) {
+                    $q->where('id_program_studi', $request->prodi_id);
                 });
             }
         } elseif (in_array($user->role, ['laboran', 'kps'])) {
-            // Pastikan KPS juga masuk filter otomatis ini
             $prodiId = $user->id_program_studi;
             $query->whereHas('bahan', function ($q) use ($prodiId) {
                 $q->where('id_program_studi', $prodiId);
             });
         }
 
-        // 5. Eksekusi Query (Pisahkan antara Print dan Tampilan Web)
+        // FIX BUG 3: Tambahkan orderBy('id', 'desc') agar urutan pagination stabil (mencegah data hilang/ganda jika ada transaksi di detik yang sama)
+        $query->orderBy('tanggal_transaksi', 'desc')->orderBy('id', 'desc');
+
+        // 5. Eksekusi Query
         if ($request->has('print')) {
-            // Untuk Print: Ambil SEMUA data tanpa batasan 15 baris
-            $transaksis = $query->latest('tanggal_transaksi')->get();
-            // Pastikan $selectedBulan di-passing ke view print untuk kop surat
+            $transaksis = $query->get(); // Print semua data tanpa limit 15 baris
             return view('laporan.print.transaksi', compact('transaksis', 'programStudis', 'selectedProdiId', 'selectedBulan', 'selectedTahun', 'tanggalMulai', 'tanggalSelesai'));
         }
 
-        // Untuk Tampilan Web: Gunakan Pagination agar server tidak jebol
-        $transaksis = $query->latest('tanggal_transaksi')->paginate(15)->withQueryString();
+        $transaksis = $query->paginate(15)->withQueryString();
 
-        // Pastikan $selectedBulan di-passing ke view utama
         return view('laporan.transaksi', compact('transaksis', 'programStudis', 'availableYears', 'selectedBulan', 'selectedTahun', 'selectedProdiId', 'tanggalMulai', 'tanggalSelesai'));
     }
 

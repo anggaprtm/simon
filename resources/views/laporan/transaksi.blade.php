@@ -30,12 +30,10 @@
                             
                              <div>
                                 <label for="tahun" class="block text-sm font-medium text-gray-700">Tahun Periode</label>
-                                <select name="tahun" id="tahun" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                <select name="tahun" id="tahun" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
                                     <option value="">-- Semua Tahun --</option>
                                     @foreach($availableYears as $year)
-                                        <option value="{{ $year }}" {{ $selectedTahun == $year ? 'selected' : '' }}>
-                                            {{ $year }}
-                                        </option>
+                                        <option value="{{ $year }}" {{ $selectedTahun == $year ? 'selected' : '' }}>Tahun {{ $year }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -48,7 +46,7 @@
                                         $namaBulan = ['1'=>'Januari', '2'=>'Februari', '3'=>'Maret', '4'=>'April', '5'=>'Mei', '6'=>'Juni', '7'=>'Juli', '8'=>'Agustus', '9'=>'September', '10'=>'Oktober', '11'=>'November', '12'=>'Desember'];
                                     @endphp
                                     @foreach($namaBulan as $num => $nama)
-                                        <option value="{{ $num }}" {{ request('bulan') == $num ? 'selected' : '' }}>{{ $nama }}</option>
+                                        <option value="{{ $num }}" {{ $selectedBulan == $num ? 'selected' : '' }}>{{ $nama }}</option>
                                     @endforeach
                                 </select>
                             </div>
