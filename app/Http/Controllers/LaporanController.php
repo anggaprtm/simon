@@ -118,11 +118,10 @@ class LaporanController extends Controller
         // 1. Ambil semua tahun unik untuk filter
         $availableYears = \App\Models\PeriodeStok::select('tahun_periode')->distinct()->orderBy('tahun_periode', 'desc')->pluck('tahun_periode');
         
-        // FIX BUG 1: Hilangkan default date('n') agar "Semua Bulan" benar-benar muncul dari awal
         $selectedBulan = $request->input('bulan'); 
         
-        // FIX BUG 2: Tangani "Semua Tahun" dengan aman. Jika URL tidak punya parameter 'tahun' sama sekali, pakai tahun ini. Jika ada tapi kosong, biarkan kosong.
-        $selectedTahun = $request->has('tahun') ? $request->input('tahun') : date('Y'); 
+        // FIX: Gunakan exists() daripada has(). exists() mengecek apakah parameter ada di URL, meskipun isinya kosong/null.
+        $selectedTahun = $request->exists('tahun') ? $request->input('tahun') : date('Y'); 
 
         $selectedProdiId = $request->input('prodi_id');
         $tanggalMulai = $request->input('tanggal_mulai');
@@ -158,21 +157,22 @@ class LaporanController extends Controller
             });
         }
 
-        // FIX BUG 3: Tambahkan orderBy('id', 'desc') agar urutan pagination stabil (mencegah data hilang/ganda jika ada transaksi di detik yang sama)
         $query->orderBy('tanggal_transaksi', 'desc')->orderBy('id', 'desc');
 
         // 5. Eksekusi Query
         if ($request->has('print')) {
-            $transaksis = $query->get(); // Print semua data tanpa limit 15 baris
+            $transaksis = $query->get();
             return view('laporan.print.transaksi', compact('transaksis', 'programStudis', 'selectedProdiId', 'selectedBulan', 'selectedTahun', 'tanggalMulai', 'tanggalSelesai'));
         }
 
+        // FIX UTAMA: Gunakan ( ?? '' ) untuk memaksa null menjadi string kosong, 
+        // sehingga Laravel TIDAK membuang key dari URL pagination-nya!
         $transaksis = $query->paginate(15)->appends([
-            'prodi_id' => $selectedProdiId,
-            'bulan' => $selectedBulan,
-            'tahun' => $selectedTahun,
-            'tanggal_mulai' => $tanggalMulai,
-            'tanggal_selesai' => $tanggalSelesai
+            'prodi_id'      => $selectedProdiId ?? '',
+            'bulan'         => $selectedBulan ?? '',
+            'tahun'         => $selectedTahun ?? '',
+            'tanggal_mulai' => $tanggalMulai ?? '',
+            'tanggal_selesai'=> $tanggalSelesai ?? ''
         ]);
 
         return view('laporan.transaksi', compact('transaksis', 'programStudis', 'availableYears', 'selectedBulan', 'selectedTahun', 'selectedProdiId', 'tanggalMulai', 'tanggalSelesai'));
