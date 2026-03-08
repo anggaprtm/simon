@@ -77,7 +77,7 @@
             <div class="bg-white px-6 py-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
                 <div>
                     <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-0.5">Selamat Datang Kembali</p>
-                    <h1 class="text-xl font-bold text-gray-800">{{ Auth::user()->name }} 👋</h1>
+                    <h1 class="text-xl font-bold text-gray-800">{{ Auth::user()->nama_lengkap }} 👋🏻</h1>
                 </div>
                 <span class="text-xs text-gray-400 hidden md:block">{{ now()->isoFormat('dddd, D MMMM YYYY') }}</span>
             </div>
@@ -281,7 +281,7 @@
                         <span class="ml-auto text-xs font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">{{ count($data['akan_kedaluwarsa']) }}</span>
                         @endif
                     </div>
-                    <div class="scroll-list">
+                   <div class="scroll-list">
                         @forelse($data['akan_kedaluwarsa'] as $bahan)
                         <div class="px-5 py-3.5 border-b border-gray-50 hover:bg-gray-50 flex items-center justify-between gap-3 transition-colors">
                             <div class="min-w-0">
@@ -294,11 +294,12 @@
                             </div>
                         </div>
                         @empty
-                        <div class="px-5 py-8 text-center">
-                            <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-2">
+                        {{-- Ubah div di bawah ini dengan penambahan flexbox dan min-height --}}
+                        <div class="px-5 py-8 text-center flex flex-col items-center justify-center h-full min-h-[200px]">
+                            <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center mb-2">
                                 <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                             </div>
-                            <p class="text-sm text-gray-400 italic">Tidak ada bahan yang hampir kedaluwarsa</p>
+                            <p class="text-sm text-gray-400">Tidak ada bahan yang hampir kedaluwarsa</p>
                         </div>
                         @endforelse
                     </div>

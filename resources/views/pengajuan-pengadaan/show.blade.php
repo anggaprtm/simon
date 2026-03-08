@@ -227,17 +227,17 @@
                         <thead>
                             <tr>
                                 <th class="detail-th w-8">No</th>
-                                <th class="detail-th">Nama Barang</th>
-                                <th class="detail-th">Keterangan / Stok</th>
-                                <th class="detail-th">Diajukan</th>
+                                <th class="detail-th text-left">Nama Barang</th>
+                                <th class="detail-th text-left">Keterangan / Stok</th>
+                                <th class="detail-th text-left">Diajukan</th>
                                 @if($pengajuanPengadaan->status !== 'Draft')
-                                <th class="detail-th">Disetujui</th>
-                                <th class="detail-th">Status Item</th>
-                                <th class="detail-th">Catatan</th>
+                                <th class="detail-th text-left">Disetujui</th>
+                                <th class="detail-th text-left">Status Item</th>
+                                <th class="detail-th text-left">Catatan</th>
                                 @endif
-                                <th class="detail-th">Harga Satuan</th>
-                                <th class="detail-th">Harga Total</th>
-                                <th class="detail-th">Referensi</th>
+                                <th class="detail-th text-left">Harga Satuan</th>
+                                <th class="detail-th text-left">Harga Total</th>
+                                <th class="detail-th text-left">Referensi</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white">
