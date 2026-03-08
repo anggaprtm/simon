@@ -189,9 +189,16 @@
                     <div class="flex flex-col md:flex-row gap-3 items-end">
                         <div class="flex-grow">
                             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Cari Bahan</label>
-                            <div class="relative">
-                                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
-                                <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Masukkan kode, nama, merk, atau jenis bahan..." class="search-input pl-9">
+                            <div class="relative w-full">
+                                {{-- Pembungkus icon --}}
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+                                    </svg>
+                                </div>
+                                
+                                {{-- Gunakan !pl-10 (important padding-left) untuk bypass CSS custom --}}
+                                <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Masukkan kode, nama, merk, atau jenis bahan..." class="block w-full !pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                             </div>
                         </div>
                         <div class="flex gap-2 shrink-0">
@@ -280,8 +287,8 @@
                                             {{ $bahan->formatted_stock }}
                                         </span>
                                     </td>
-                                    <td class="text-gray-500 text-xs">{{ $bahan->gudang->nama_gudang }}</td>
-                                    <td>
+                                    <td class="text-gray-500 text-xs text-center">{{ $bahan->gudang->nama_gudang }}</td>
+                                    <td class="text-center">
                                         <span class="text-xs font-semibold bg-indigo-50 text-indigo-600 px-2 py-1 rounded-md">{{ $bahan->programStudi->kode_program_studi }}</span>
                                     </td>
                                     <td>

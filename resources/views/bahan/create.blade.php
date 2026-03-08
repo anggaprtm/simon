@@ -6,27 +6,55 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    @if (session('error'))
-                        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded" role="alert">
-                            <strong class="font-bold">Terjadi Kesalahan!</strong>
-                            <span class="block sm:inline">{{ session('error') }}</span>
-                        </div>
-                    @endif
-                    <form action="{{ route('bahan.store') }}" method="POST">
-                        @include('bahan._form')
-                        <div class="flex items-center justify-end mt-6">
-                            <a href="{{ route('bahan.index') }}" class="text-gray-600 hover:text-gray-900 mr-4">Batal</a>
-                            <x-primary-button>
-                                {{ __('Simpan') }}
-                            </x-primary-button>
-                        </div>
-                    </form>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        .form-wrap * { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+
+    <div class="py-10 form-wrap">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-5">
+
+            {{-- PAGE HEADER --}}
+            <div class="flex items-center gap-3">
+                <a href="{{ route('bahan.index') }}" class="w-9 h-9 rounded-xl bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-400 hover:text-gray-700 hover:border-gray-300 transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-extrabold text-gray-800">Tambah Bahan Baru</h1>
+                    <p class="text-sm text-gray-400 mt-0.5">Isi detail bahan habis pakai yang akan didaftarkan</p>
                 </div>
             </div>
+
+            {{-- ERROR ALERT --}}
+            @if (session('error'))
+            <div class="flex items-start gap-3 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl text-sm">
+                <svg class="w-4 h-4 flex-shrink-0 mt-0.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                <div><strong class="font-bold">Terjadi Kesalahan!</strong> {{ session('error') }}</div>
+            </div>
+            @endif
+
+            {{-- FORM CARD --}}
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <form action="{{ route('bahan.store') }}" method="POST">
+                    <div class="p-6 md:p-8">
+                        @include('bahan._form')
+                    </div>
+
+                    {{-- FOOTER ACTIONS --}}
+                    <div class="px-6 md:px-8 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
+                        <a href="{{ route('bahan.index') }}"
+                           class="inline-flex items-center gap-2 px-4 py-2 rounded-9 text-sm font-semibold text-gray-600 bg-white border border-gray-200 hover:bg-gray-100 transition-all rounded-lg">
+                            Batal
+                        </a>
+                        <button type="submit"
+                            class="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-sm transition-all hover:-translate-y-0.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Simpan Bahan
+                        </button>
+                    </div>
+                </form>
+            </div>
+
         </div>
     </div>
 </x-app-layout>
