@@ -48,7 +48,9 @@
             <tr>
                 <td class="py-1 font-bold">Periode Laporan</td>
                 <td class="py-1">:</td>
-                <td class="py-1">Bulan {{ $namaBulan }} Tahun {{ $selectedTahun }}</td>
+                <td class="py-1">
+                    {{ !empty($selectedBulan) ? "Bulan " . $namaBulan . " Tahun " . $selectedTahun : "Tahun " . $selectedTahun . " (Semua Bulan)" }}
+                </td>
             </tr>
             <tr>
                 <td class="py-1 font-bold">Status Tahun</td>

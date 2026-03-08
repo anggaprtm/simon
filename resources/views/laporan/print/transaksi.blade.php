@@ -18,12 +18,15 @@
             '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
         ];
         
-        $teksPeriode = '';
+       $teksPeriode = '';
         if (!empty($tanggalMulai) && !empty($tanggalSelesai)) {
             $teksPeriode = \Carbon\Carbon::parse($tanggalMulai)->isoFormat('D MMMM Y') . ' s.d ' . \Carbon\Carbon::parse($tanggalSelesai)->isoFormat('D MMMM Y');
         } else {
-            $namaBulan = !empty($selectedBulan) ? $daftarBulan[$selectedBulan] : 'Semua Bulan';
-            $teksPeriode = "Bulan $namaBulan Tahun $selectedTahun";
+            if (!empty($selectedBulan)) {
+                $teksPeriode = "Bulan " . $daftarBulan[$selectedBulan] . " Tahun " . $selectedTahun;
+            } else {
+                $teksPeriode = "Tahun " . $selectedTahun . " (Semua Bulan)";
+            }
         }
     @endphp
 
