@@ -7,6 +7,9 @@ use App\Models\Bahan;
 use App\Models\ProgramStudi;
 use App\Models\Transaksi;
 use App\Models\PeriodeStok;
+use App\Models\ArsipLaporan;
+use Illuminate\Support\Facades\Storage;
+
 
 class LaporanController extends Controller
 {
