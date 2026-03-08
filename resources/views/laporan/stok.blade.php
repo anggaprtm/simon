@@ -108,6 +108,9 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="mt-6">
+                        {{ $laporanData->links() }}
+                    </div>
                 </div>
             </div>
         </div>

@@ -39,6 +39,19 @@
                                     @endforeach
                                 </select>
                             </div>
+
+                            <div>
+                                <label for="bulan" class="block text-sm font-medium text-gray-700">Bulan</label>
+                                <select name="bulan" id="bulan" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    <option value="">-- Semua Bulan --</option>
+                                    @php
+                                        $namaBulan = ['1'=>'Januari', '2'=>'Februari', '3'=>'Maret', '4'=>'April', '5'=>'Mei', '6'=>'Juni', '7'=>'Juli', '8'=>'Agustus', '9'=>'September', '10'=>'Oktober', '11'=>'November', '12'=>'Desember'];
+                                    @endphp
+                                    @foreach($namaBulan as $num => $nama)
+                                        <option value="{{ $num }}" {{ request('bulan') == $num ? 'selected' : '' }}>{{ $nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                             {{-- Filter Tanggal Mulai --}}
                             <div>
                                 <label for="tanggal_mulai" class="block text-sm font-medium text-gray-700">Dari Tanggal</label>
@@ -99,6 +112,10 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+                    {{-- Tampilkan Pagination Link --}}
+                    <div class="mt-6">
+                        {{ $transaksis->links() }}
                     </div>
                 </div>
             </div>

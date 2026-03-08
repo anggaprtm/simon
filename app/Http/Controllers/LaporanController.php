@@ -15,7 +15,35 @@ class LaporanController extends Controller
 {
     public function index()
     {
-        return view('laporan.index');
+        $user = Auth::user();
+        $bulanSekarang = date('n');
+        $tahunSekarang = date('Y');
+
+        // 1. Cek Pengingat Arsip Laporan
+        $belumUpload = false;
+        if (in_array($user->role, ['laboran', 'kps'])) {
+            $sudahUpload = \App\Models\ArsipLaporan::where('id_program_studi', $user->id_program_studi)
+                            ->where('bulan', $bulanSekarang)
+                            ->where('tahun', $tahunSekarang)
+                            ->exists();
+            $belumUpload = !$sudahUpload;
+        }
+
+        // 2. Data Sederhana untuk Grafik/Statistik Bulan Ini
+        // Mengambil total transaksi masuk & keluar bulan ini (untuk Prodi user atau Semua Prodi)
+        $queryTransaksi = \App\Models\Transaksi::whereMonth('tanggal_transaksi', $bulanSekarang)
+                                               ->whereYear('tanggal_transaksi', $tahunSekarang);
+        
+        if (in_array($user->role, ['laboran', 'kps'])) {
+            $queryTransaksi->whereHas('bahan', function($q) use ($user) {
+                $q->where('id_program_studi', $user->id_program_studi);
+            });
+        }
+
+        $totalMasuk = (clone $queryTransaksi)->whereIn('jenis_transaksi', ['masuk', 'penyesuaian_masuk'])->count();
+        $totalKeluar = (clone $queryTransaksi)->whereIn('jenis_transaksi', ['keluar', 'penyesuaian_keluar'])->count();
+
+        return view('laporan.index', compact('belumUpload', 'bulanSekarang', 'tahunSekarang', 'totalMasuk', 'totalKeluar'));
     }
 
     public function stok(Request $request)
@@ -23,11 +51,14 @@ class LaporanController extends Controller
         $user = Auth::user();
 
         $availableYears = PeriodeStok::select('tahun_periode')->distinct()->orderBy('tahun_periode', 'desc')->pluck('tahun_periode');
-        $tahunAktif = $availableYears->first(); // Tahun aktif adalah tahun terbaru
+        // Tambahkan fallback date('Y') jaga-jaga kalau database periode_stoks masih kosong
+        $tahunAktif = $availableYears->first() ?? date('Y'); 
 
         // Default ke tahun aktif jika tidak ada tahun yang dipilih
         $selectedTahun = $request->input('tahun', $tahunAktif);
         
+        // Variabel bulan ini digunakan HANYA untuk tampilan cetak/header, BUKAN untuk filter query stok
+        $selectedBulan = $request->input('bulan', date('n'));        
         $selectedProdiId = $request->input('prodi_id');
 
         // Ambil data Program Studi untuk filter
@@ -35,45 +66,49 @@ class LaporanController extends Controller
         if (in_array($user->role, ['superadmin', 'fakultas'])) {
             $programStudis = ProgramStudi::orderBy('nama_program_studi')->get();
         }
-        
-        $laporanData = collect(); // Inisialisasi collection kosong
 
         if ($selectedTahun == $tahunAktif) {
             // JIKA MELIHAT PERIODE AKTIF, data diambil dari tabel 'bahans' (real-time)
             $query = Bahan::with(['programStudi', 'gudang', 'satuanRel', 'periodeAktif']);
-            // Terapkan filter prodi
+            
+            // Terapkan filter prodi (Pembaruan: KPS dimasukkan)
             if (in_array($user->role, ['superadmin', 'fakultas']) && $selectedProdiId) {
                 $query->where('id_program_studi', $selectedProdiId);
-            } elseif ($user->role === 'laboran') {
+            } elseif (in_array($user->role, ['laboran', 'kps'])) { 
                 $query->where('id_program_studi', $user->id_program_studi);
             }
-            $laporanData = $query->orderBy('nama_bahan')->get();
+            
+            // UBAH: Gunakan paginate, bukan get()
+            $laporanData = $query->orderBy('nama_bahan')->paginate(15)->withQueryString();
 
         } else {
             // JIKA MELIHAT PERIODE LAMA (SUDAH DITUTUP), data diambil dari tabel 'periode_stoks'
             $query = PeriodeStok::with(['bahan.programStudi', 'bahan.gudang', 'bahan.satuanRel'])
                                 ->where('tahun_periode', $selectedTahun);
-            // Terapkan filter prodi
+                                
+            // Terapkan filter prodi (Pembaruan: KPS dimasukkan)
             if (in_array($user->role, ['superadmin', 'fakultas']) && $selectedProdiId) {
-                $prodiId = $selectedProdiId;
-                $query->whereHas('bahan', function ($q) use ($prodiId) {
-                    $q->where('id_program_studi', $prodiId);
+                $query->whereHas('bahan', function ($q) use ($selectedProdiId) {
+                    $q->where('id_program_studi', $selectedProdiId);
                 });
-            } elseif ($user->role === 'laboran') {
+            } elseif (in_array($user->role, ['laboran', 'kps'])) {
                 $prodiId = $user->id_program_studi;
                 $query->whereHas('bahan', function ($q) use ($prodiId) {
                     $q->where('id_program_studi', $prodiId);
                 });
             }
-            $laporanData = $query->get();
+            
+            // UBAH: Gunakan paginate, bukan get()
+            $laporanData = $query->paginate(15)->withQueryString();
         }
-
 
         if ($request->has('print')) {
-            return view('laporan.print.stok', compact('laporanData', 'selectedTahun', 'tahunAktif', 'programStudis', 'selectedProdiId'));
+            // Jangan lupa passing selectedBulan ke view print
+            return view('laporan.print.stok', compact('laporanData', 'selectedTahun', 'selectedBulan', 'tahunAktif', 'programStudis', 'selectedProdiId'));
         }
 
-        return view('laporan.stok', compact('laporanData', 'selectedTahun', 'tahunAktif', 'programStudis', 'availableYears', 'selectedProdiId'));
+        // Jangan lupa passing selectedBulan ke view
+        return view('laporan.stok', compact('laporanData', 'selectedTahun', 'selectedBulan', 'tahunAktif', 'programStudis', 'availableYears', 'selectedProdiId'));
     }
 
     public function transaksi(Request $request)
@@ -85,6 +120,7 @@ class LaporanController extends Controller
         
         // 2. Ambil input dari filter form
         $selectedProdiId = $request->input('prodi_id');
+        $selectedBulan = $request->input('bulan', date('n'));
         $selectedTahun = $request->input('tahun');
         $tanggalMulai = $request->input('tanggal_mulai');
         $tanggalSelesai = $request->input('tanggal_selesai');
@@ -99,6 +135,10 @@ class LaporanController extends Controller
 
         if ($selectedTahun) {
             $query->whereYear('tanggal_transaksi', $selectedTahun);
+        }
+
+        if ($selectedBulan) {
+            $query->whereMonth('tanggal_transaksi', $selectedBulan);
         }
 
         // Filter untuk Superadmin & Fakultas
@@ -119,7 +159,7 @@ class LaporanController extends Controller
             });
         }
 
-        $transaksis = $query->latest('tanggal_transaksi')->get();
+        $transaksis = $query->latest('tanggal_transaksi')->paginate(15)->withQueryString();
 
         // Jika ada permintaan cetak, gunakan layout print
         if ($request->has('print')) {
@@ -128,6 +168,7 @@ class LaporanController extends Controller
 
         return view('laporan.transaksi', compact('transaksis', 'programStudis', 'availableYears', 'selectedTahun', 'selectedProdiId', 'tanggalMulai', 'tanggalSelesai'));
     }
+
     public function arsip(Request $request)
     {
         $user = Auth::user();
