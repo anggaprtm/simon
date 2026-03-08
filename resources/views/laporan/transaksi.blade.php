@@ -98,7 +98,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap">{!! $transaksi->bahan?->nama_bahan_html ?? '<span class="text-red-500 font-bold text-xs italic">Bahan Terhapus</span>' !!}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $transaksi->bahan?->programStudi?->kode_program_studi ?? 'N/A' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $transaksi->formatted_jumlah }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $transaksi->user->name ?? 'N/A' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $transaksi->user?->name ?? 'User Terhapus' }}</td>
                                         <td class="px-6 py-4">{{ $transaksi->keterangan }}</td>
                                     </tr>
                                 @empty
