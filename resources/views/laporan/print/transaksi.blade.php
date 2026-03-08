@@ -89,25 +89,4 @@
             @endforelse
         </tbody>
     </table>
-
-    {{-- KOLOM TANDA TANGAN (LEGALISASI) --}}
-    <div class="mt-12 flex justify-between text-sm text-gray-900 break-inside-avoid">
-        <div class="text-center w-1/3">
-            <p>Mengetahui,</p>
-            <p class="font-bold">Koordinator Program Studi</p>
-            <br><br><br><br>
-            <p class="font-bold underline">(........................................)</p>
-            <p>NIP. </p>
-        </div>
-        
-        <div class="text-center w-1/3">
-            <p>Surabaya, {{ \Carbon\Carbon::now()->isoFormat('D MMMM Y') }}</p>
-            <p class="font-bold">Laboran / Petugas Laboratorium</p>
-            <br><br><br><br>
-            <p class="font-bold underline">{{ Auth::user()->name }}</p>
-            {{-- Jika ada NIP di tabel user, bisa dipanggil. Jika tidak, sediakan titik-titik --}}
-            <p>NIP/NIK. {{ Auth::user()->nip ?? '.........................' }}</p>
-        </div>
-    </div>
-
 @endsection
