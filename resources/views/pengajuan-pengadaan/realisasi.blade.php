@@ -161,7 +161,7 @@
                                             
                                             <div class="md:col-span-2 pt-2 border-t border-gray-100 mt-2">
                                                 <label class="block text-sm font-bold text-gray-800 mb-1.5">Qty Realisasi Masuk <span class="text-red-500">*</span></label>
-                                                <input type="number" name="qty_realisasi" step="any" min="0.000001" class="block w-full md:w-1/2 rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all sm:text-sm font-semibold bg-indigo-50 text-indigo-700" value="{{ $detail->approved_jumlah }}" required>
+                                                <input type="number" name="qty_realisasi" step="any" min="0.000001" class="block w-full md:w-1/2 rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all sm:text-sm font-semibold bg-indigo-50 text-indigo-700" value="{{ floatval($detail->approved_jumlah) }}" required>
                                                 <p class="text-xs text-gray-500 mt-1.5">Jumlah riil yang masuk ke gudang saat ini. Default-nya adalah jumlah yang disetujui.</p>
                                             </div>
                                         </div>
