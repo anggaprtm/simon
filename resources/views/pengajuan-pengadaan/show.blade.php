@@ -253,7 +253,13 @@
                             <tr>
                                 <td class="detail-td text-xs text-gray-400 font-medium">{{ $loop->iteration }}</td>
                                 <td class="detail-td">
-                                    <p class="font-semibold text-gray-800 text-sm">{{ $detail->display_nama_barang }}</p>
+                                    <p class="font-semibold text-gray-800 text-sm">
+                                        @if($isExisting)
+                                            {!! $detail->bahan->nama_bahan_html !!}
+                                        @else
+                                            {{ $detail->display_nama_barang }}
+                                        @endif
+                                    </p>
                                     @if(!$isExisting)
                                     <span class="inline-block mt-1 text-xs font-semibold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Bahan baru</span>
                                     @endif

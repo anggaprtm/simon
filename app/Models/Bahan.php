@@ -67,7 +67,9 @@ class Bahan extends Model
 
     public function getNamaBahanHtmlAttribute(): string
     {
-        $namaBahanAsli = $this->attributes['nama_bahan'] ?? '';
+
+        $namaBahanAsli = htmlspecialchars($this->attributes['nama_bahan'] ?? '', ENT_QUOTES, 'UTF-8');
+        
         if ($this->format_kimia) {
             return preg_replace('/(?<=[A-Za-z\)])(\d+)/', '<sub>$1</sub>', $namaBahanAsli);
         }

@@ -252,7 +252,7 @@
                         @forelse($data['stok_menipis'] as $bahan)
                         <div class="px-5 py-3.5 border-b border-gray-50 hover:bg-gray-50 flex items-center justify-between gap-3 transition-colors">
                             <div class="min-w-0">
-                                <a href="{{ route('transaksi.history', $bahan->id) }}" class="text-sm font-semibold text-gray-800 hover:text-blue-600 truncate block">{{ $bahan->nama_bahan }}</a>
+                                <a href="{{ route('transaksi.history', $bahan->id) }}" class="text-sm font-semibold text-gray-800 hover:text-blue-600 truncate block">{!! $bahan->nama_bahan_html !!}</a>
                                 <span class="text-xs text-gray-400">Min. {{ floatval($bahan->minimum_stock) }} {{ $bahan->satuanRel->nama_satuan ?? '' }}</span>
                             </div>
                             <span class="flex-shrink-0 text-xs font-bold bg-red-100 text-red-700 px-2.5 py-1 rounded-full">
@@ -285,7 +285,7 @@
                         @forelse($data['akan_kedaluwarsa'] as $bahan)
                         <div class="px-5 py-3.5 border-b border-gray-50 hover:bg-gray-50 flex items-center justify-between gap-3 transition-colors">
                             <div class="min-w-0">
-                                <a href="{{ route('transaksi.history', $bahan->id) }}" class="text-sm font-semibold text-gray-800 hover:text-blue-600 truncate block">{{ $bahan->nama_bahan }}</a>
+                                <a href="{{ route('transaksi.history', $bahan->id) }}" class="text-sm font-semibold text-gray-800 hover:text-blue-600 truncate block">{!! $bahan->nama_bahan_html !!}</a>
                                 <span class="text-xs text-gray-400">Sisa stok: {{ $bahan->formatted_stock }}</span>
                             </div>
                             <div class="text-right flex-shrink-0">
@@ -322,7 +322,7 @@
                                 {{ ucwords(str_replace('_', ' ', $trx->jenis_transaksi)) }}
                             </span>
                             <span class="font-semibold">{{ $trx->formatted_jumlah }}</span> untuk
-                            <a href="{{ route('transaksi.history', $trx->bahan?->id) }}" class="text-blue-600 hover:underline font-semibold">{{ $trx->bahan?->nama_bahan ?? 'Bahan Terhapus' }}</a>
+                            <a href="{{ route('transaksi.history', $trx->bahan?->id) }}" class="text-blue-600 hover:underline font-semibold">{!! $trx->bahan ? $trx->bahan->nama_bahan_html : 'Bahan Terhapus' !!}</a>
                         </p>
                     </div>
                     @empty
