@@ -119,7 +119,7 @@
                                 @foreach($programStudis as $prodi)
                                     <option value="{{ $prodi->id }}" {{ $selectedProdiId == $prodi->id ? 'selected' : '' }}>
                                         {{ $prodi->nama_program_studi }}
-                                    </option>
+                                    </option> 
                                 @endforeach
                             </select>
                         </div>

@@ -160,6 +160,32 @@ class PengajuanPengadaanController extends Controller
             ->header('Content-Disposition', 'inline; filename="nota-dinas-' . $pengajuanPengadaan->id . '.pdf"');
     }
 
+    public function cetakHasilApproval(PengajuanPengadaan $pengajuanPengadaan)
+    {
+        // Pastikan hanya bisa dicetak kalau statusnya sudah Disetujui atau Selesai
+        if (!in_array($pengajuanPengadaan->status, ['Disetujui', 'Selesai'])) {
+            return redirect()->route('pengajuan-pengadaan.show', $pengajuanPengadaan)
+                ->with('error', 'Dokumen hasil approval belum tersedia.');
+        }
+
+        $pengajuanPengadaan->load(['user', 'programStudi', 'details.bahan.satuanRel', 'details.satuan']);
+
+        $data = [
+            'pengajuan' => $pengajuanPengadaan,
+        ];
+
+        try {
+            $pdf = app('dompdf.wrapper')
+                ->loadView('pengajuan-pengadaan.pdf.hasil_approval_landscape', $data)
+                ->setPaper('a4', 'landscape');
+
+            return $pdf->stream('hasil-approval-' . $pengajuanPengadaan->id . '.pdf');
+        } catch (\Throwable $e) {
+            return redirect()->route('pengajuan-pengadaan.show', $pengajuanPengadaan)
+                ->with('error', 'Gagal mencetak dokumen approval: ' . $e->getMessage());
+        }
+    }
+    
     public function destroy(PengajuanPengadaan $pengajuanPengadaan)
     {
         if (Auth::id() !== $pengajuanPengadaan->id_user || $pengajuanPengadaan->status !== 'Draft') {

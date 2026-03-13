@@ -33,6 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('bahan/bulk-delete', [BahanController::class, 'bulkDelete'])->name('bahan.bulkDelete');
     Route::resource('bahan', BahanController::class);
     Route::get('pengajuan-pengadaan/{pengajuanPengadaan}/cetak-nota', [PengajuanPengadaanController::class, 'cetakNotaDinas'])->name('pengajuan-pengadaan.cetakNota');
+    Route::get('pengajuan-pengadaan/{pengajuanPengadaan}/cetak-approval', [PengajuanPengadaanController::class, 'cetakHasilApproval'])->name('pengajuan-pengadaan.cetakApproval');
     Route::post('pengajuan-pengadaan/{pengajuanPengadaan}/ajukan-final', [PengajuanPengadaanController::class, 'ajukanFinal'])->name('pengajuan-pengadaan.ajukanFinal');
     Route::get('pengajuan-pengadaan/{pengajuanPengadaan}/realisasi', [PengajuanPengadaanController::class, 'realisasiForm'])->name('pengajuan-pengadaan.realisasiForm');
     Route::post('pengajuan-pengadaan/{pengajuanPengadaan}/realisasi/{detailPengadaan}', [PengajuanPengadaanController::class, 'realisasiItem'])->name('pengajuan-pengadaan.realisasiItem');
