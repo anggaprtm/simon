@@ -184,7 +184,7 @@
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4">
                     <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Kelola Dokumen</h3>
 
-                    @if((Auth::id() === $pengajuanPengadaan->id_user || Auth::user()->role === 'kps') && in_array($pengajuanPengadaan->status, ['Draft', 'Diajukan', 'Disetujui', 'Selesai']))
+                    @if((Auth::id() === $pengajuanPengadaan->id_user || Auth::user()->role === 'kps' || Auth::user()->role === 'superadmin') && in_array($pengajuanPengadaan->status, ['Draft', 'Diajukan', 'Disetujui', 'Selesai']))
                     <form action="{{ route('pengajuan-pengadaan.uploadNota', $pengajuanPengadaan->id) }}" method="POST" enctype="multipart/form-data" class="space-y-2">
                         @csrf
                         <label class="text-xs font-semibold text-gray-500 block">Unggah Arsip PDF</label>
