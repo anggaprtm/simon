@@ -23,7 +23,7 @@
 
     <table style="margin-top: 15px; width: 100%;">
         <tr>
-            <td style="width: 80px;">Nomor Surat</td>
+            <td style="width: 80px;">Nomor Surat Dinas</td>
             <td>: {{ $pengajuan->nomor_surat ?? '-' }}</td>
         </tr>
         <tr>
